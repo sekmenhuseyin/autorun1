@@ -2,10 +2,9 @@
 Imports System.Xml
 
 Module main
-    Dim isLibrary As Boolean = False : Dim Yayinevi, KitapIsmi As String
     Sub Main()
         Dim klasor As New IO.DirectoryInfo(My.Application.Info.DirectoryPath) : Dim Dosya As IO.DirectoryInfo() = klasor.GetDirectories() : Dim FileNames As IO.DirectoryInfo
-        Dim html As String = "" : Dim FolderCount As Integer = 0
+        Dim html As String = "" : Dim FolderCount As Integer = 0 : Dim Yayinevi, KitapIsmi As String
         For Each FileNames In Dosya
             If File.Exists(FileNames.FullName & "\atu.exe") And File.Exists(FileNames.FullName & "\Book\Data\info.xml") Then
                 Dim xmldoc As New XmlDocument : Dim xmlnode As XmlNodeList
@@ -15,7 +14,6 @@ Module main
                 Yayinevi = xmlnode(0).Item("YayineviAdi").InnerText.Replace(" Yayınları", "")
                 KitapIsmi = xmlnode(0).Item("KitapIsmi").InnerText
                 html &= WriteBook(FileNames.FullName & "\atu.exe", Yayinevi & " " & KitapIsmi, FileNames.Name)
-                Console.WriteLine(FileNames.Name & ": " & Yayinevi & " " & KitapIsmi)
                 FolderCount += 1
             End If
         Next
