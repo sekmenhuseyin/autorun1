@@ -114,6 +114,9 @@
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Autorun\Includes\bookcase.min.js.map">
+      <DependentUpon>bookcase.min.js</DependentUpon>
+    </None>
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
@@ -141,6 +144,32 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Autorun\Autorun.ico" />
+    <Content Include="Autorun\Background.jpg" />
+    <Content Include="Autorun\Background.png" />
+    <Content Include="Autorun\Includes\bookcase.css" />
+    <Content Include="Autorun\Includes\bookcase.js" />
+    <Content Include="Autorun\Includes\bookcase.min.css" />
+    <Content Include="Autorun\Includes\bookcase.min.js" />
+    <Content Include="Autorun\Includes\Bookcase\gold-1.png" />
+    <Content Include="Autorun\Includes\Bookcase\gold-2-big.png" />
+    <Content Include="Autorun\Includes\Bookcase\gold-2.png" />
+    <Content Include="Autorun\Includes\Bookcase\gold-3.png" />
+    <Content Include="Autorun\Includes\Bookcase\label-featured.png" />
+    <Content Include="Autorun\Includes\Bookcase\label-hot.png" />
+    <Content Include="Autorun\Includes\Bookcase\label-new.png" />
+    <Content Include="Autorun\Includes\Bookcase\label-price.png" />
+    <Content Include="Autorun\Includes\Bookcase\loading.gif" />
+    <Content Include="Autorun\Includes\Bookcase\shelf.png" />
+    <Content Include="Autorun\Includes\Bookcase\skin.png" />
+    <Content Include="Autorun\Includes\hammer.min.js" />
+    <Content Include="Autorun\Includes\jquery.hammer.min.js" />
+    <Content Include="Autorun\Includes\jquery.min.js" />
+    <Content Include="Autorun\Includes\jquery.qrcode.min.js" />
+    <Content Include="Autorun\Includes\md5.js" />
+    <Content Include="Autorun\Logo.png" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

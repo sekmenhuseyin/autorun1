@@ -6,8 +6,8 @@ Module main
         'tanımlamalar
         Dim tmp() As String = My.Application.Info.DirectoryPath.Split("\") : Dim klasoryolu As String = "" : For i = 0 To UBound(tmp) - 1 : klasoryolu &= tmp(i) & "\" : Next
         Dim klasor As New IO.DirectoryInfo(My.Application.Info.DirectoryPath) : Dim Dosya As IO.DirectoryInfo() = klasor.GetDirectories() : Dim FileNames As IO.DirectoryInfo
-        Dim html, Yayinevi, KitapIsmi, InternetSitesi, SonSayfa, Sinif As String : Dim FolderCount, j As Integer : Dim isLibrary As Boolean = False
-        html = "" : Yayinevi = "" : KitapIsmi = "" : InternetSitesi = "" : SonSayfa = "" : Sinif = "" : FolderCount = 0 : j = 0
+        Dim html, Yayinevi, KitapIsmi, InternetSitesi, SonSayfa, Sinif(1), Tur(1), Brans(1), ID As String : Dim FolderCount As Integer : Dim isLibrary As Boolean = False
+        html = "" : Yayinevi = "" : InternetSitesi = "" : FolderCount = 0
         'kitap sayısını bul
         For Each FileNames In Dosya
             If File.Exists(FileNames.FullName & "\atu.exe") And File.Exists(FileNames.FullName & "\Book\Data\info.xml") Then
@@ -30,27 +30,35 @@ Module main
             If FolderCount > 5 Then isLibrary = True : Exit For
         Next
         For Each FileNames In Dosya
+            'değerleri sıfırlar
+            Yayinevi = "" : KitapIsmi = "" : InternetSitesi = "" : SonSayfa = "" : Sinif(0) = "" : Tur(0) = "" : Brans(0) = "" : Sinif(1) = "" : Tur(1) = "" : Brans(1) = "" : ID = "0"
+            'xml varsa oku
             If File.Exists(FileNames.FullName & "\atu.exe") And File.Exists(FileNames.FullName & "\Book\Data\info.xml") Then
                 'xmlden okuma bmlünü
                 Dim xmldoc As New XmlDocument : Dim xmlnode As XmlNodeList
                 Dim fs As New FileStream(FileNames.FullName & "\Book\Data\info.xml", FileMode.Open, FileAccess.Read)
+                'xml yükle
+                xmldoc.Load(fs) : xmlnode = xmldoc.GetElementsByTagName("info")
+                'bilgileri al
+                If IsNothing(xmlnode(0).Item("YayineviAdi")) = False Then Yayinevi = xmlnode(0).Item("YayineviAdi").InnerText
+                If IsNothing(xmlnode(0).Item("KitapIsmi")) = False Then KitapIsmi = xmlnode(0).Item("KitapIsmi").InnerText
+                If IsNothing(xmlnode(0).Item("InternetSitesi")) = False Then InternetSitesi = xmlnode(0).Item("InternetSitesi").InnerText
+                If IsNothing(xmlnode(0).Item("SonSayfa")) = False Then SonSayfa = xmlnode(0).Item("SonSayfa").InnerText
+                If IsNothing(xmlnode(0).Item("Sinif")) = False Then Sinif(0) = xmlnode(0).Item("Sinif").InnerText
+                If IsNothing(xmlnode(0).Item("SinifAd")) = False Then Sinif(1) = xmlnode(0).Item("SinifAd").InnerText
+                If IsNothing(xmlnode(0).Item("Tur")) = False Then Tur(0) = xmlnode(0).Item("Tur").InnerText
+                If IsNothing(xmlnode(0).Item("TurAd")) = False Then Tur(1) = xmlnode(0).Item("TurAd").InnerText
+                If IsNothing(xmlnode(0).Item("Brans")) = False Then Brans(0) = xmlnode(0).Item("Brans").InnerText
+                If IsNothing(xmlnode(0).Item("BransAd")) = False Then Brans(1) = xmlnode(0).Item("BransAd").InnerText
+                If IsNothing(xmlnode(0).Item("No")) = False Then ID = xmlnode(0).Item("No").InnerText
+                'her kitap için bir satır yaz
+                If isLibrary = True Then
+                    If html <> "" Then html &= ","
+                    html &= WriteBook2(ID, KitapIsmi, FileNames.FullName & "\atu.exe", SonSayfa, Tur(1), Tur(0), Brans(1), Brans(0), Sinif(1), Sinif(0))
+                Else
+                    html &= WriteBook(FileNames.FullName & "\atu.exe", Yayinevi.Replace(" Yayınları", "") & " " & KitapIsmi, FileNames.Name)
+                End If
                 Try
-                    'xml yükle
-                    xmldoc.Load(fs) : xmlnode = xmldoc.GetElementsByTagName("info")
-                    'bilgileri al
-                    Yayinevi = xmlnode(0).Item("YayineviAdi").InnerText
-                    KitapIsmi = xmlnode(0).Item("KitapIsmi").InnerText
-                    InternetSitesi = xmlnode(0).Item("InternetSitesi").InnerText
-                    SonSayfa = xmlnode(0).Item("SonSayfa").InnerText
-                    Sinif = xmlnode(0).Item("Sinif").InnerText
-                    'her kitap için bir satır yaz
-                    j += 1
-                    If isLibrary = True Then
-                        If html <> "" Then html &= ","
-                        html &= WriteBook2(j, KitapIsmi, FileNames.FullName & "\atu.exe", SonSayfa, Sinif)
-                    Else
-                        html &= WriteBook(FileNames.FullName & "\atu.exe", Yayinevi.Replace(" Yayınları", "") & " " & KitapIsmi, FileNames.Name)
-                    End If
                 Catch ex As Exception
                 End Try
                 'kapat
@@ -75,8 +83,8 @@ Module main
     Private Function WriteBook(ExeFile As String, title As String, foldername As String) As String
         Return "<div class=""cerceve""><a href=""#"" onclick=""RunFile('file:///" & ExeFile.Replace("\", "/") & "');""><img src=""../" & foldername & "/Book/Images/Pages/Thumbs/Sayfa1.etf"" height=""180"" /></a><h3>" & title & "</h3></div>"
     End Function
-    Private Function WriteBook2(id As Integer, title As String, ExeFile As String, SonSayfa As String, Sinif As String) As String
-        Return "{""id"":""" & id & """,""title"":""" & title & """,""description"":""" & title & """,""url"":""file:///" & ExeFile.Replace("\", "/") & """,""pages"":""" & SonSayfa & """,""newTime"":"""",""categoryname"":"""",""categoryid"":"""",""brans"":"""",""bransid"":"""",""sinif"":"""",""sinifid"":""" & Sinif & """,""label"":""0""}"
+    Private Function WriteBook2(id As Integer, title As String, ExeFile As String, SonSayfa As String, category As String, categoryid As String, brans As String, bransid As String, sinif As String, sinifid As String) As String
+        Return "{""id"":""" & id & """,""title"":""" & title & """,""description"":""" & title & """,""url"":""file:///" & ExeFile.Replace("\", "/") & """,""pages"":""" & SonSayfa & """,""newTime"":"""",""categoryname"":""" & category & """,""categoryid"":""" & categoryid & """,""brans"":""" & brans & """,""bransid"":""" & bransid & """,""sinif"":""" & sinif & """,""sinifid"":""" & sinifid & """,""label"":""0""}"
     End Function
     Private Function WriteHta(isLibrary As Boolean, isBeginning As Boolean, ExeFile As String, Optional genislik As Integer = 1000, Optional yayinevi As String = "", Optional web As String = "") As String
         Dim html As String = ""
