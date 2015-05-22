@@ -64,17 +64,17 @@
   <PropertyGroup>
     <OptionInfer>On</OptionInfer>
   </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationIcon>Autorun\Autorun.ico</ApplicationIcon>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ApplicationManifest>My Project\app.manifest</ApplicationManifest>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System">
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Xml">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Core">
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Xml.Linq">
       <Private>True</Private>
     </Reference>
   </ItemGroup>
@@ -116,7 +116,12 @@
   <ItemGroup>
     <None Include="Autorun\Includes\bookcase.min.js.map">
       <DependentUpon>bookcase.min.js</DependentUpon>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="mscorlib.tlb">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="My Project\app.manifest" />
     <None Include="My Project\Application.myapp">
       <Generator>MyApplicationCodeGenerator</Generator>
       <LastGenOutput>Application.Designer.vb</LastGenOutput>
@@ -146,30 +151,80 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Autorun\Autorun.ico" />
-    <Content Include="Autorun\Background.jpg" />
-    <Content Include="Autorun\Background.png" />
+    <Content Include="Autorun\Autorun.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Background.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Background.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Background2.jpg">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="Autorun\Includes\bookcase.css" />
     <Content Include="Autorun\Includes\bookcase.js" />
-    <Content Include="Autorun\Includes\bookcase.min.css" />
-    <Content Include="Autorun\Includes\bookcase.min.js" />
-    <Content Include="Autorun\Includes\Bookcase\gold-1.png" />
-    <Content Include="Autorun\Includes\Bookcase\gold-2-big.png" />
-    <Content Include="Autorun\Includes\Bookcase\gold-2.png" />
-    <Content Include="Autorun\Includes\Bookcase\gold-3.png" />
-    <Content Include="Autorun\Includes\Bookcase\label-featured.png" />
-    <Content Include="Autorun\Includes\Bookcase\label-hot.png" />
-    <Content Include="Autorun\Includes\Bookcase\label-new.png" />
-    <Content Include="Autorun\Includes\Bookcase\label-price.png" />
-    <Content Include="Autorun\Includes\Bookcase\loading.gif" />
-    <Content Include="Autorun\Includes\Bookcase\shelf.png" />
-    <Content Include="Autorun\Includes\Bookcase\skin.png" />
-    <Content Include="Autorun\Includes\hammer.min.js" />
-    <Content Include="Autorun\Includes\jquery.hammer.min.js" />
-    <Content Include="Autorun\Includes\jquery.min.js" />
-    <Content Include="Autorun\Includes\jquery.qrcode.min.js" />
-    <Content Include="Autorun\Includes\md5.js" />
-    <Content Include="Autorun\Logo.png" />
+    <Content Include="Autorun\Includes\bookcase.min.css">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\bookcase.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\Bookcase\gold-1.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\Bookcase\gold-2-big.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\Bookcase\gold-2.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\Bookcase\label-featured.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\Bookcase\label-hot.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\Bookcase\label-new.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\Bookcase\label-price.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\Bookcase\loading.gif">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\Bookcase\shelf.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\Bookcase\skin.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\hammer.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\jquery.hammer.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\jquery.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\jquery.qrcode.min.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Includes\md5.js">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Autorun\Logo.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="mscorlib.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="System.Core.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.VisualBasic.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

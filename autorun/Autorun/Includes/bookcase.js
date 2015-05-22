@@ -1,5 +1,5 @@
 var utils = {
-    encodeHTML: function(str) {
+    encodeHTML: function (str) {
         if (typeof str == "undefined" || str == null) {
             str = "";
         }
@@ -14,16 +14,16 @@ var utils = {
             .replace(/\n/g, '<br>');
     },
 
-    addPlaceHolder: function($input, value) {
+    addPlaceHolder: function ($input, value) {
         $input.val(value);
 
-        $input.on("focus", function() {
+        $input.on("focus", function () {
             if ($input.val().trim() === value) {
                 $input.val("");
             }
         });
 
-        $input.on("blur", function() {
+        $input.on("blur", function () {
             if ($input.val().trim() === "") {
                 $input.val(value);
             }
@@ -37,18 +37,18 @@ var utils = {
         return new Date(date[2], date[1] - 1, date[0], time[0], time[1], time[2]);
     },
 
-    nl2br: function(str) {
+    nl2br: function (str) {
         return str.replace(/\n/g, '<br>');
     },
 
-    br2nl: function(str) {
+    br2nl: function (str) {
         return str.replace(/<.?br.?>/g, '\n');
     },
 
-    validateForm: function($form) {
+    validateForm: function ($form) {
 
         var hasError = false;
-        $form.find("input, textarea").each(function(i, elem) {
+        $form.find("input, textarea").each(function (i, elem) {
             var $elem = $(elem),
                 value = $elem.val().trim();
 
@@ -62,7 +62,7 @@ var utils = {
         return !hasError;
     },
 
-    loadImg: function(urlArr) {
+    loadImg: function (urlArr) {
         var i = 0,
             len = urlArr.length;
 
@@ -93,11 +93,10 @@ function Bookcase($container, userData, data, cateData, classData, departmentDat
     this.pages = 1;
     this.needReload = false;
     this.cache = [];
-    this.skins = ["red", "gold", "silver", "green", "yellow"];
-    this.currentSkinId = this.skins.indexOf(userData.skin || "red");
+    this.skins = ["gold"];
+    this.currentSkinId = this.skins.indexOf(userData.skin || "gold");
     this.isShowSkin = false;
     this.sortBy = "New2Old";
-    this.imgUrl = ["Includes/Bookcase/gold-1.png", "Includes/Bookcase/red-1.png", "Includes/Bookcase/silver-1.png", "Includes/Bookcase/green-1.png", "Includes/Bookcase/yellow-1.png", "Includes/Bookcase/gold-3.png", "Includes/Bookcase/red-3.png", "Includes/Bookcase/silver-3.png", "Includes/Bookcase/green-3.png", "Includes/Bookcase/yellow-3.png","Includes/Bookcase/gold-2.png", "Includes/Bookcase/red-2.png", "Includes/Bookcase/silver-2.png", "Includes/Bookcase/green-2.png", "Includes/Bookcase/yellow-2.png","Includes/Bookcase/gold-2-big.jpg", "Includes/Bookcase/red-2-big.jpg", "Includes/Bookcase/silver-2-big.jpg", "Includes/Bookcase/green-2-big.jpg", "Includes/Bookcase/yellow-2-big.jpg"];
 
     this.body = $("body");
 
@@ -158,8 +157,6 @@ function Bookcase($container, userData, data, cateData, classData, departmentDat
     this.sortCategoryButton = $("<div class='sort-button sort-cate-button'></div>");
     this.sortDepartmentButton = $("<div class='sort-button sort-date-button'></div>");
 
-    this.shareButton = $("<div class='share-button'></div>");
-
     // logo
     this.bottomLogo = $("<span class='bottom-logo-link'></span>");
     this.bottomLogoImg = $("<img />");
@@ -172,18 +169,12 @@ function Bookcase($container, userData, data, cateData, classData, departmentDat
         this.bottomLogoImg.attr("src", logoSrc);
     }
 
-    if (this.userData.isShowShare === "0") {
-        this.shareButton.addClass("hide");
-    }
-
     var self = this,
         $skinButtons = this.skinPanel.find("li");
 
     $skinButtons.eq(this.currentSkinId).addClass("skin-chosen");
 
-    this.shareButton.hammer().on("tap", this.share.bind(this));
-
-    this.skinButton.hammer().on("tap", function() {
+    this.skinButton.hammer().on("tap", function () {
         if (self.isShowSkin) {
             self.skinPanel.css({
                 height: 0,
@@ -201,9 +192,9 @@ function Bookcase($container, userData, data, cateData, classData, departmentDat
         }
     });
 
-    this.skinPanel.find("li").each(function(i, elem) {
+    this.skinPanel.find("li").each(function (i, elem) {
         var $elem = $(elem);
-        $elem.hammer().on("tap", function() {
+        $elem.hammer().on("tap", function () {
             $skinButtons.eq(self.currentSkinId).removeClass("skin-chosen");
 
             self.body.removeClass(self.skins[self.currentSkinId]);
@@ -220,7 +211,7 @@ function Bookcase($container, userData, data, cateData, classData, departmentDat
         }
     });
 
-    this.pageInput.on("keypress", function(e) {
+    this.pageInput.on("keypress", function (e) {
         if (e.which === 13) {
             var value = self.pageInput.val().trim(),
                 page = parseInt(value, 10);
@@ -233,29 +224,29 @@ function Bookcase($container, userData, data, cateData, classData, departmentDat
         }
     });
 
-    this.pageInput.on("focus", function() {
+    this.pageInput.on("focus", function () {
         self.pageInput.val("");
     });
 
-    this.pageInput.on("blur", function() {
+    this.pageInput.on("blur", function () {
         var value = self.pageInput.val().trim();
         if (value === "") {
             self.pageInput.val(self.current + " / " + self.pages);
         }
     });
 
-    this.casePageContainer.hammer().on("tap", ".book-img-wrapper", function(e) {
+    this.casePageContainer.hammer().on("tap", ".book-img-wrapper", function (e) {
 
         var index = this.id;
 
         var url;
         self.data[index]._domainUrl = self.data[index].url;
 
-        switch(self.userData.openType) {
-            case "0": 
-                RunFile(self.data[index].url);
+        switch (self.userData.openType) {
+            case "1":
+                DemoPanel(this.data.title, this.data._domainUrl);
                 break;
-            case "2": 
+            case "2":
                 window.open(self.data[index]._domainUrl);
                 break;
             default:
@@ -266,7 +257,7 @@ function Bookcase($container, userData, data, cateData, classData, departmentDat
 
     this.searchButton.hammer().on("tap", this.search.bind(this));
     this.searchCancelButton.hammer().on("tap", this.cancelSearch.bind(this));
-    this.searchInput.on("keypress", function(e) {
+    this.searchInput.on("keypress", function (e) {
         if (e.which === 13) {
             self.search();
         }
@@ -277,20 +268,23 @@ function Bookcase($container, userData, data, cateData, classData, departmentDat
     this.prevButton.hammer().on("tap", this.prev.bind(this));
     this.nextButton.hammer().on("tap", this.next.bind(this));
 
-    this.caseContainer.on("touchmove", function(e) {
+    this.caseContainer.on("touchmove", function (e) {
         e.preventDefault();
     });
 
-    this.casePageContainer.hammer().on("swipeleft", function(e) {
+    this.casePageContainer.hammer().on("swipeleft", function (e) {
         self.next();
     });
 
-    this.casePageContainer.hammer().on("swiperight", function(e) {
+    this.casePageContainer.hammer().on("swiperight", function (e) {
         self.prev();
     });
 
     this.panel
         .append(this.navContainer
+            .append(this.bottomLogo
+                .append(this.bottomLogoImg)
+            )
             .append(this.navBrandingContainer
                 .append(this.navTitle)
             )
@@ -321,11 +315,8 @@ function Bookcase($container, userData, data, cateData, classData, departmentDat
                 .append(this.skinButton
                     .append(this.skinPanel)
                 )
-                .append(this.bottomLogo
-                    .append(this.bottomLogoImg)
-                )
             )
-        .appendTo($container); 
+        .appendTo($container);
     //sýnýf combobox ekleme
     this.classData.unshift({
         value: "-1",
@@ -368,21 +359,19 @@ function Bookcase($container, userData, data, cateData, classData, departmentDat
 
     var timeoutId = null;
 
-    $(window).on("resize", function() {
+    $(window).on("resize", function () {
         clearTimeout(timeoutId);
-        timeoutId = setTimeout(function() {
+        timeoutId = setTimeout(function () {
             self.resize();
         }, 50);
     });
 
     this.resize();
-
-    utils.loadImg(this.imgUrl);
 }
 
 Bookcase.prototype = {
 
-    shakeMessage: function() {
+    shakeMessage: function () {
         this.messageContainer
         .animate({
             left: "-=2px"
@@ -406,11 +395,11 @@ Bookcase.prototype = {
         }
     },
 
-    hideMessage: function() {
+    hideMessage: function () {
         this.messageContainer.hide();
     },
 
-    getInputAutoWidth: function($input) {
+    getInputAutoWidth: function ($input) {
         var value = this.pageInput.val(),
             $clone = $("<div></div>").text(value).css({
                 fontSize: this.pageInput.css("font-size"),
@@ -425,13 +414,7 @@ Bookcase.prototype = {
         return result;
     },
 
-    share: function() {
-        new SharePanel({
-            isSelf: this.userData.isSelf
-        });
-    },
-
-    cancelSearch: function() {
+    cancelSearch: function () {
         this.searchInput.val("").focus();
         this.searchCancelButton.hide();
         this.searchButton.show();
@@ -439,14 +422,14 @@ Bookcase.prototype = {
         this.search();
     },
 
-    search: function() {
+    search: function () {
         var self = this,
             keywords = this.searchInput.val().trim().toLowerCase(),
             categoryid = this.caseCategorySelect && this.caseCategorySelect.val(),
             sinifid = this.caseClassSelect && this.caseClassSelect.val(),
             bransid = this.caseDepartmentSelect && this.caseDepartmentSelect.val(),
             i,
-            len = this.originalData.length, 
+            len = this.originalData.length,
             result = [];
 
         if (keywords === "ara") {//aranacak kelime "ara" ise arama yapma sakýn
@@ -468,7 +451,7 @@ Bookcase.prototype = {
             // filter keywords
             if (title.match(keywords) || desc.match(keywords)) { //baþlýkta veya açýklamada varsa aranana kelime
                 // filter
-                if (this.originalData[i].categoryid == categoryid || categoryid == -1) { 
+                if (this.originalData[i].categoryid == categoryid || categoryid == -1) {
                     if (this.originalData[i].sinifid == sinifid || sinifid == -1) {
                         if (this.originalData[i].bransid == bransid || bransid == -1) {
                             result.push(this.originalData[i]);
@@ -485,7 +468,7 @@ Bookcase.prototype = {
             var $message = $("<p>Sonu&ccedil; yok. </p>"),
                 $backButton = $("<a href='javascript:void(0);'>Geri</a>").appendTo($message);
 
-            $backButton.hammer().on("tap", function() {
+            $backButton.hammer().on("tap", function () {
                 self.cancelSearch();
             });
 
@@ -495,12 +478,12 @@ Bookcase.prototype = {
         }
     },
 
-    autoFitToBottom: function($container, $imgWrapper, $img, index) {
+    autoFitToBottom: function ($container, $imgWrapper, $img, index) {
         var self = this,
             img = new Image();
 
         var $loading = $("<div class='loading'><img src='Includes/Bookcase/loading.gif'></div>").appendTo($container);
-        img.onload = function() {
+        img.onload = function () {
 
             var containerHeight = $container.height(),
                 containerWidth = $container.width(),
@@ -547,16 +530,16 @@ Bookcase.prototype = {
             }
             $img.after($borderContainer);
 
-            setTimeout(function() {
-                $imgWrapper.fadeIn(400, function() {
+            setTimeout(function () {
+                $imgWrapper.fadeIn(400, function () {
                     self.cache[index] = $container;
                 });
-                 $loading.remove();
+                $loading.remove();
             }, 50);
         };
-        img.onerror = function() {
+        img.onerror = function () {
 
-            var $asImg = $("<div class='as-book-img'></div>"), 
+            var $asImg = $("<div class='as-book-img'></div>"),
                 containerHeight = $container.height(),
                 containerWidth = $container.width(),
                 aspectRatio = 3 / 4,
@@ -602,18 +585,18 @@ Bookcase.prototype = {
             }
             $img.after($asImg).after($borderContainer);
 
-            setTimeout(function() {
+            setTimeout(function () {
                 $img.hide();
-                $imgWrapper.fadeIn(400, function() {
+                $imgWrapper.fadeIn(400, function () {
                     self.cache[index] = $container;
                 });
             }, 50);
-             $loading.remove();
+            $loading.remove();
         };
         img.src = $img.attr("src");
     },
 
-    skipTo: function(i) {
+    skipTo: function (i) {
 
         // fix index
         if (i > this.pages) {
@@ -712,7 +695,7 @@ Bookcase.prototype = {
         this.current = i;
     },
 
-    getLabelFilePath: function(id) {
+    getLabelFilePath: function (id) {
         var path = "";
         switch (id) {
             case "1":
@@ -728,7 +711,7 @@ Bookcase.prototype = {
         return path;
     },
 
-    createPage: function(i, isPreload) {
+    createPage: function (i, isPreload) {
 
         var $targetPage = $("<div id='page-" + i + "' class='single-page'></div>");
 
@@ -751,7 +734,7 @@ Bookcase.prototype = {
                     } else {
                         $bookContianer = $("<div class='book-container'></div>");
                         $imgWrapper = $("<div id='" + index + "' class='book-img-wrapper'></div>");
-                        $img = $("<img class='book-img' src='http://iebys.com/Nesnes/Yerlestirme/Kapak/" + this.data[index].id + "_Thumb.jpg'/>").appendTo($bookContianer);
+                        $img = $("<img class='book-img' src='" + this.data[index].kapak + "'/>").appendTo($bookContianer);
                         $label = $("<img class='book-label' src='" + this.getLabelFilePath(this.data[index].label) + "'>");
                         $priceLabel = $("<div class='price-label' title='" + this.data[index].sinif + "'>" + this.data[index].sinif + "</div>");
 
@@ -780,21 +763,21 @@ Bookcase.prototype = {
         return $targetPage;
     },
 
-    prev: function() {
+    prev: function () {
         if (this.current === 1) {
             return;
         }
         this.skipTo(this.current - 1);
     },
 
-    next: function() {
+    next: function () {
         if (this.current === this.pages) {
             return;
         }
         this.skipTo(this.current + 1);
     },
 
-    resize: function(isDataChanged) {
+    resize: function (isDataChanged) {
 
         if (isDataChanged) {
             this.total = this.data.length;
@@ -810,14 +793,14 @@ Bookcase.prototype = {
         var height = this.container.height(),
             width = this.container.width(),
             // total - nav - control - first row over
-            rows = Math.floor((height - this.topHeight - this.bottomHeight - this.firstRowOverHeight) / this.rowHeight),
+            rows = Math.floor((height - this.topHeight - this.firstRowOverHeight) / this.rowHeight),
             rows = rows > 0 ? rows : 1,
             cols = Math.floor(((width - this.offsetX * 2) / this.bookWidth)),
             pages = Math.ceil(this.total / (rows * cols)) || 1,
             r;
 
         //sýnýf,brans düðmelerini ortala
-        this.navRightButtonContainer.css("left", Math.floor((width - this.navRightButtonContainer.width())/2));
+        this.navRightButtonContainer.css("left", Math.floor((width - this.navRightButtonContainer.width()) / 2));
 
         if (isDataChanged || rows !== this.rows || cols != this.cols) {
             this.casePageContainer.empty();
@@ -877,15 +860,15 @@ function LightBox(title, width, skin) {
 LightBox.prototype = {
     constructor: LightBox,
 
-    getBox: function() {
+    getBox: function () {
         return this.box;
     },
 
-    getPanel: function() {
+    getPanel: function () {
         return this.panel;
     },
 
-    launch: function(hasInput) {
+    launch: function (hasInput) {
         var $body = $("body"),
             self = this,
             top;
@@ -893,12 +876,12 @@ LightBox.prototype = {
         // fix ipad input focus will trigger resize event issue
         if (hasInput) {
             var $inputs = this.box.find("input, textarea");
-            $inputs.each(function(i, elem) {
+            $inputs.each(function (i, elem) {
                 var $elem = $(elem);
-                $elem.on("focus", function() {
+                $elem.on("focus", function () {
                     self.isNoResize = true;
                 });
-                $elem.on("blur", function() {
+                $elem.on("blur", function () {
                     self.isNoResize = false;
                 })
             });
@@ -920,28 +903,28 @@ LightBox.prototype = {
         }, 200);
     },
 
-    cancel: function() {
+    cancel: function () {
         var self = this;
 
-        self.background.fadeOut(function() {
+        self.background.fadeOut(function () {
             self.background.remove();
         });
 
         self.box.animate({
             opacity: 0,
             top: this.document.scrollTop()
-        }, 200, function() {
+        }, 200, function () {
             self.box.remove();
         });
     },
 
-    resizeH: function() {
+    resizeH: function () {
         this.box.css({
             left: (window.innerWidth - this.box.width()) / 2
         });
     },
 
-    resize: function(duration) {
+    resize: function (duration) {
         if (window.innerWidth < this.width || this.width == "auto") {
             this.box.width(window.innerWidth);
         } else {
@@ -986,11 +969,11 @@ function DemoPanel(title, url, width, height) {
     this.iframe = $("<iframe allowfullscreen frameborder='0'></iframe>");
 
     var self = this;
-    setTimeout(function() {
+    setTimeout(function () {
         self.iframe.attr("src", url);
     }, 300);
 
-    this.iframe.on("touchmove", function(e) {
+    this.iframe.on("touchmove", function (e) {
         e.preventDefault();
     });
 
@@ -1004,7 +987,7 @@ function DemoPanel(title, url, width, height) {
 }
 
 DemoPanel.prototype = {
-    resize: function() {
+    resize: function () {
         this.lightBox.resize(0);
         this.iframe.width(window.innerWidth - 10);
         this.iframe.height(window.innerHeight - 65);
@@ -1033,7 +1016,7 @@ function BookDetailPanel($imgWrapper, data) {
     this.viewButton = $("<div class='button button-blue button-rounded button-block button-large'>A&ccedil;</div>");
 
     $imgWrapper.hammer().on("tap", this.view.bind(this));
-    this.viewButton.hammer().on("tap", RunFile(data.url));
+    this.viewButton.hammer().on("tap", this.view.bind(this));
 
     this.lightBox.getPanel()
         .append(this.detailContainer
@@ -1045,7 +1028,7 @@ function BookDetailPanel($imgWrapper, data) {
             .append(this.desc)
             .append(this.viewButton)
         )
-        ;
+    ;
 
     $(window).on("resize", this.resize.bind(this));
     this.resize();
@@ -1056,14 +1039,11 @@ function BookDetailPanel($imgWrapper, data) {
 }
 
 BookDetailPanel.prototype = {
-    view: function() {
-        this.lightBox.cancel();
-        new DemoPanel(this.data.title, this.data._domainUrl);
-
-        // window.open(this.data.url);
+    view: function () {
+        RunFile(this.data._domainUrl)
     },
 
-    resize: function() {
+    resize: function () {
         this.detailContainer.width((window.innerWidth < this.boxWidth ? window.innerWidth : this.boxWidth) - 270);
     }
 };
@@ -1144,7 +1124,7 @@ function UserDetailPanel(data) {
                 .append(this.errorCloseButton)
             )
         )
-        ;
+    ;
 
     this.sendButton.hammer().on("tap", this.send.bind(this));
 
@@ -1159,22 +1139,22 @@ function UserDetailPanel(data) {
 
 UserDetailPanel.prototype = {
 
-    sendAnother: function() {
+    sendAnother: function () {
         this.lightBox.cancel();
         new UserDetailPanel(this.data);
     },
 
-    close: function() {
+    close: function () {
         this.lightBox.cancel();
     },
 
-    reSend: function() {
+    reSend: function () {
         this.errorGroup.slideUp();
         this.sendingGroup.slideDown();
         this.send();
     },
 
-    send: function() {
+    send: function () {
 
         var self = this,
             name = this.nameInput.val().trim(),
@@ -1200,11 +1180,11 @@ UserDetailPanel.prototype = {
                 toEmail: toEmail,
                 Code: hex_md5(encodeURIComponent(name + email + subject + message + toName + toEmail + "fliphtml5"))
             },
-            beforeSend: function() {
+            beforeSend: function () {
                 self.contactForm.slideUp();
                 self.sendingGroup.slideDown();
             },
-            success: function(data) {
+            success: function (data) {
                 self.sendingGroup.slideUp();
                 if (data == "1") {
                     self.successGroup.slideDown();
@@ -1212,240 +1192,13 @@ UserDetailPanel.prototype = {
                     self.errorGroup.slideDown();
                 }
             },
-            error: function() {
+            error: function () {
                 self.sendingGroup.slideUp();
                 self.errorGroup.slideDown();
             }
         });
     }
 };
-
-function SharePanel(options) {
-    this.options = options;
-
-    this.lightBox = new LightBox("Payla&#351;", 485);
-
-    this.qrCodeGroup = $("<div class='row text-center'></div>");
-    this.qrContainer = $("<div class='share-qr-container'></div>")
-    // this.qrImg = $("<img class='share-qr-img' src='" + options.QRCodeSrc + "'>");
-
-    this.urlGroup = $("<div class='row'></div>");
-    this.urlLabel = $("<label>Adres</label>");
-    this.urlInput = $("<input type='text' value='" + location.href + "'></input>");
-
-    this.shareGroup = $("<div class='row float-fix'></div>");
-    this.shareLabel = $("<label class='left'>Payla&#351;</label>");
-    this.shareButtonGroup = $("<span class='left share-social-button-group'></span>");
-    this.shareFacebook = $("<a href='https://www.facebook.com/sharer/sharer.php?u=" + location.href + "' target='_blank'><img src='Includes/Social/facebook.png'></a>");
-    this.shareTwitter = $("<a href='https://www.twitter.com/share?url=" + location.href + "' target='_blank'><img src='Includes/Social/twitter.png'></a>");
-    this.shareGoogle = $("<a href='https://plus.google.com/share?url=" + location.href + "' target='_blank'><img src='Includes/Social/googleplus.png'></a>");
-    this.shareLinkedIn = $("<a href='https://www.linkedin.com/cws/share?url=" + location.href + "' target='_blank'><img src='Includes/Social/linkedin.png'></a>");
-    this.shareEmail = $("<img src='Includes/Social/email.png'>");
-
-    this.emailPanel = $("<div class='share-email-panel' style='display: none;'></div>");
-    this.emailWrapper = $("<div class='share-email-panel-wrapper'></div>");
-    this.shareForm = $("<div></div>");
-    this.toEmailGroup = $("<div class='row'></div>");
-    this.toEmailLabel = $("<label>G&ouml;nderilecek Email Adresi</label>");
-    this.toEmailInput = $("<input type='email' value='' placeholder='G&ouml;nderilecek Email Adresi'></input>");
-
-    this.fromNameGroup = $("<div class='row'></div>");
-    this.fromNameLabel = $("<label>Ad&#305;n&#305;z</label>");
-    this.fromNameInput = $("<input type='text' value='' placeholder='Ad&#305;n&#305;z'></input>");
-
-    this.fromEmailGroup = $("<div class='row'></div>");
-    this.fromEmailLabel = $("<label>Email Adresiniz</label>");
-    this.fromEmailInput = $("<input type='email' value='' placeholder='Email Adresiniz'></input>");
-
-    this.messageGroup = $("<div class='row'></div>");
-    this.messageLabel = $("<label>Mesaj</label>");
-    this.messageInput = $("<textarea rows='3' placeholder='Mesaj'></textarea>");
-
-    this.sendButton = $("<div class='button button-gray button-block'>G&ouml;nder</div>");
-
-    this.successGroup = $("<div class='alert-success user-info-mail-status-container hide'></div>");
-    this.successText = $("<p>Mesaj g&ouml;nderildi!</p>");
-    this.successButtonGroup = $("<div class='row'></div>");
-    this.successAnotherButton = $("<div class='button button-blue button-rounded marginX'>Ba&#351;ka bir mesaj g&ouml;nder</div>");
-    this.successCloseButton = $("<div class='button button-gray button-rounded marginX'>Kapat</div>");
-
-    this.sendingGroup = $("<div class='alert-info user-info-mail-status-container hide'></div>");
-    this.sendingText = $("<p>G&ouml;nderiliyor...</p>");
-
-    this.errorGroup = $("<div class='alert-error user-info-mail-status-container hide'></div>");
-    this.errorText = $("<p>Oops! Olmad&#305;. Daha sonra tekrar dene.</p>");
-    this.errorButtonGroup = $("<div class='row'></div>");
-    this.errorReSendButton = $("<div class='button button-blue button-rounded marginX'>Tekrar G&ouml;nder</div>");
-    this.errorCloseButton = $("<div class='button button-gray button-rounded marginX'>Kapat</div>");
-
-    this.lightBox.getPanel()
-        .append(this.qrCodeGroup
-            .append(this.qrContainer)
-        )
-        .append(this.urlGroup
-            .append(this.urlLabel)
-            .append(this.urlInput)
-        )
-        .append(this.shareGroup
-            .append(this.shareLabel)
-            .append(this.shareButtonGroup
-                .append(this.shareFacebook)
-                .append(this.shareTwitter)
-                .append(this.shareGoogle)
-                .append(this.shareLinkedIn)
-                .append(this.shareEmail)
-            )
-        )
-        .append(this.emailPanel
-            .append(this.emailWrapper
-                .append(this.shareForm
-                    .append(this.toEmailGroup
-                        // .append(this.toEmailLabel)
-                        .append(this.toEmailInput)
-                    )
-                    .append(this.fromNameGroup
-                        // .append(this.fromNameLabel)
-                        .append(this.fromNameInput)
-                    )
-                    .append(this.fromEmailGroup
-                        // .append(this.fromEmailLabel)
-                        .append(this.fromEmailInput)
-                    )
-                    .append(this.messageGroup
-                        // .append(this.messageLabel)
-                        .append(this.messageInput)
-                    )
-                    .append(this.sendButton)
-                )
-                .append(this.sendingGroup
-                    .append(this.sendingText)
-                )
-                .append(this.successGroup
-                    .append(this.successText)
-                    .append(this.successButtonGroup
-                        .append(this.successAnotherButton)
-                        .append(this.successCloseButton)
-                    )
-                )
-                .append(this.errorGroup
-                    .append(this.errorText)
-                    .append(this.errorButtonGroup
-                        .append(this.errorReSendButton)
-                        .append(this.errorCloseButton)
-                    )
-                )
-            )
-
-        )
-    ;
-
-    this.qrContainer.qrcode({width: 110, height: 110, text: location.href});
-
-    if(!options.isSelf){
-        this.shareFacebook.add(this.shareTwitter).add(this.shareGoogle).add(this.shareLinkedIn).hammer().on("tap", function(){
-        });
-    }
-
-    this.lightBox.launch(true);
-
-    var self = this,
-        showingEmail = false;
-
-    this.urlInput.hammer().on("tap", function() {
-        self.urlInput[0].select();
-    });
-
-    this.shareEmail.hammer().on("tap", function() {
-        if (showingEmail) {
-            self.emailPanel.slideUp(400, function() {
-                self.lightBox.resize();
-            });
-            showingEmail = false;
-            
-        } else {
-            self.emailPanel.slideDown(400, function() {
-                self.lightBox.resize();
-            });
-            
-            //self.toEmailInput.focus();
-
-
-            showingEmail = true;
-        }
-
-    });
-
-    this.sendButton.hammer().on("tap", this.send.bind(this));
-
-    this.successAnotherButton.hammer().on("tap", this.sendAnother.bind(this));
-    this.successCloseButton.hammer().on("tap", this.close.bind(this));
-
-    this.errorReSendButton.hammer().on("tap", this.reSend.bind(this));
-    this.errorCloseButton.hammer().on("tap", this.close.bind(this));
-}
-
-SharePanel.prototype = {
-    
-    sendAnother: function() {
-        this.lightBox.cancel();
-        new SharePanel(this.options);
-    },
-
-    close: function() {
-        this.lightBox.cancel();
-    },
-
-    reSend: function() {
-        this.errorGroup.slideUp();
-        this.sendingGroup.slideDown();
-        this.send();
-    },
-
-    send: function() {
-
-        var self = this,
-            toEmail = this.toEmailInput.val().trim(),
-            name = this.fromNameInput.val().trim(),
-            email = this.fromEmailInput.val().trim(),
-            message = this.messageInput.val().trim();
-
-        if (!utils.validateForm(this.emailPanel)) {
-            return;
-        }
-
-        $.ajax({
-            type: "post",
-            url: "/Email/sharebookcase.php",
-            dataType: "json",
-            data: {
-                toEmail: toEmail,
-                fromFullName: name,
-                fromEmail: email,
-                fromMessage: message,
-                // Code: hex_md5(encodeURIComponent(name + email + subject + message + toName + toEmail + "fliphtml5")),
-            },
-            beforeSend: function() {
-                self.shareForm.slideUp();
-                self.sendingGroup.slideDown();
-            },
-            success: function(data) {
-                self.sendingGroup.slideUp();
-                if (data.status == "1") {
-                    self.successGroup.slideDown();
-                    if(!self.options.isSelf){
-                    }
-                } else {
-                    self.errorGroup.slideDown();
-                }
-            },
-            error: function() {
-                self.sendingGroup.slideUp();
-                self.errorGroup.slideDown();
-            }
-        });
-    }
-};
-
 
 function SmartSelect(options) {
 
@@ -1491,8 +1244,8 @@ function SmartSelect(options) {
 
     // this.options.container.on("mouseleave", this.hideOptions.bind(this));
 
-    $(document).hammer().on("tap", function(e) {
-        if(!($.contains(self.options.container[0], e.target) || self.options.container[0] == e.target)) {
+    $(document).hammer().on("tap", function (e) {
+        if (!($.contains(self.options.container[0], e.target) || self.options.container[0] == e.target)) {
             self.hideOptions();
         }
     });
