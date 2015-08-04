@@ -411,7 +411,7 @@ Bookcase.prototype = {
 
         $clone.remove();
 
-        return result;
+        return result*2;
     },
 
     cancelSearch: function () {
@@ -957,44 +957,6 @@ LightBox.prototype = {
     },
 };
 
-function DemoPanel(title, url, width, height) {
-
-    if (document.location.protocol === "https:") {
-        url = "http://dijital.tedes.com.tr/" + url.replace("http://", "") + "index.html";
-    }
-
-    this.lightBox = new LightBox(title + "&nbsp;&nbsp;<a target='_blank' href='" + url + "'>Yeni pencerede a&ccedil;</a>", "auto");
-
-    // this.iframe = $("<iframe allowfullscreen frameborder='0' src='" + url + "'></iframe>");
-    this.iframe = $("<iframe allowfullscreen frameborder='0'></iframe>");
-
-    var self = this;
-    setTimeout(function () {
-        self.iframe.attr("src", url);
-    }, 300);
-
-    this.iframe.on("touchmove", function (e) {
-        e.preventDefault();
-    });
-
-    $(window).on("resize", this.resize.bind(this));
-    this.resize();
-
-    this.lightBox.getPanel().addClass("padding-xs")
-        .append(this.iframe);
-
-    this.lightBox.launch();
-}
-
-DemoPanel.prototype = {
-    resize: function () {
-        this.lightBox.resize(0);
-        this.iframe.width(window.innerWidth - 10);
-        this.iframe.height(window.innerHeight - 65);
-        this.lightBox.resize(0);
-    }
-};
-
 function BookDetailPanel($imgWrapper, data) {
 
     this.data = data;
@@ -1064,28 +1026,7 @@ function UserDetailPanel(data) {
         this.userWebsite.addClass('hide');
     }
 
-    this.contactForm = $("<div></div>");
-    this.nameInput = $("<input class='user-info-input' type='text' placeholder='Ad&#305;n&#305;z' value=''></input>");
-    this.emailInput = $("<input class='user-info-input' type='email' placeholder='E-mail Adresiniz' value=''></input>");
-    this.subjectInput = $("<input class='user-info-input' type='text' placeholder='Konu' value=''></input>");
-    this.messageArea = $("<textarea class='user-info-textarea' rows='4' placeholder='Mesaj'></textarea>");
-    this.buttonGroup = $("<div class='row text-center'></div>");
-    this.sendButton = $("<div class='button button-gray button-rounded button-block button-large'>G&ouml;nder</div>");
-
-    this.successGroup = $("<div class='alert-success user-info-mail-status-container hide'></div>");
-    this.successText = $("<p>Mesaj g&ouml;nderildi!</p>");
-    this.successButtonGroup = $("<div class='row'></div>");
-    this.successAnotherButton = $("<div class='button button-blue button-rounded marginX'>Ba&#351;ka mesaj  g&ouml;nder</div>");
-    this.successCloseButton = $("<div class='button button-gray button-rounded marginX'>Kapat</div>");
-
-    this.sendingGroup = $("<div class='alert-info user-info-mail-status-container hide'></div>");
-    this.sendingText = $("<p>G&ouml;nderiliyor...</p>");
-
-    this.errorGroup = $("<div class='alert-error user-info-mail-status-container hide'></div>");
-    this.errorText = $("<p>Oops! Olmad&#305;. Daha sonra tekrar dene.</p>");
-    this.errorButtonGroup = $("<div class='row'></div>");
-    this.errorReSendButton = $("<div class='button button-blue button-rounded marginX'>Tekrar G&ouml;nder</div>");
-    this.errorCloseButton = $("<div class='button button-gray button-rounded marginX'>Kapat</div>");
+    this.contactForm = $("<div class='contactForm'><iframe src='http://iletisim.suratyayin.com/Mesaj.aspx?Yayin=2' style='width:450px;height:550px;scrolling:no;' frameborder='0'></iframe></div>");
 
     lightBox.getPanel()
         .append(this.userGroup
@@ -1098,106 +1039,18 @@ function UserDetailPanel(data) {
                 .append(this.userWebsite)
             )
         )
-        .append(this.contactForm
-            .append(this.nameInput)
-            .append(this.emailInput)
-            .append(this.subjectInput)
-            .append(this.messageArea)
-            .append(this.buttonGroup
-                .append(this.sendButton)
-            )
-        )
-        .append(this.sendingGroup
-            .append(this.sendingText)
-        )
-        .append(this.successGroup
-            .append(this.successText)
-            .append(this.successButtonGroup
-                .append(this.successAnotherButton)
-                .append(this.successCloseButton)
-            )
-        )
-        .append(this.errorGroup
-            .append(this.errorText)
-            .append(this.errorButtonGroup
-                .append(this.errorReSendButton)
-                .append(this.errorCloseButton)
-            )
-        )
+        .append(this.contactForm)
     ;
-
-    this.sendButton.hammer().on("tap", this.send.bind(this));
-
-    this.successAnotherButton.hammer().on("tap", this.sendAnother.bind(this));
-    this.successCloseButton.hammer().on("tap", this.close.bind(this));
-
-    this.errorReSendButton.hammer().on("tap", this.reSend.bind(this));
-    this.errorCloseButton.hammer().on("tap", this.close.bind(this));
 
     lightBox.launch(true);
 }
 
 UserDetailPanel.prototype = {
 
-    sendAnother: function () {
-        this.lightBox.cancel();
-        new UserDetailPanel(this.data);
-    },
-
     close: function () {
         this.lightBox.cancel();
-    },
-
-    reSend: function () {
-        this.errorGroup.slideUp();
-        this.sendingGroup.slideDown();
-        this.send();
-    },
-
-    send: function () {
-
-        var self = this,
-            name = this.nameInput.val().trim(),
-            email = this.emailInput.val().trim(),
-            subject = this.subjectInput.val().trim(),
-            message = this.messageArea.val().trim(),
-            toName = this.data.name,
-            toEmail = this.data.email;
-
-        if (!utils.validateForm(this.contactForm)) {
-            return;
-        }
-
-        $.ajax({
-            type: "post",
-            url: "/Email/bookcase.email.php",
-            data: {
-                fromFullName: name,
-                fromEmail: email,
-                fromSubject: subject,
-                fromMessage: message,
-                toName: toName,
-                toEmail: toEmail,
-                Code: hex_md5(encodeURIComponent(name + email + subject + message + toName + toEmail + "fliphtml5"))
-            },
-            beforeSend: function () {
-                self.contactForm.slideUp();
-                self.sendingGroup.slideDown();
-            },
-            success: function (data) {
-                self.sendingGroup.slideUp();
-                if (data == "1") {
-                    self.successGroup.slideDown();
-                } else {
-                    self.errorGroup.slideDown();
-                }
-            },
-            error: function () {
-                self.sendingGroup.slideUp();
-                self.errorGroup.slideDown();
-            }
-        });
     }
+
 };
 
 function SmartSelect(options) {
