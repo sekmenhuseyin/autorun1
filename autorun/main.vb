@@ -4,12 +4,15 @@ Imports System.Xml
 Module main
     Dim lstSinif As List(Of String) = New List(Of String) : Dim lstBrans As List(Of String) = New List(Of String) : Dim lstTur As List(Of String) = New List(Of String)
     Dim lstSinifID As List(Of String) = New List(Of String) : Dim lstBransID As List(Of String) = New List(Of String) : Dim lstTurID As List(Of String) = New List(Of String)
+    Dim HtaAddress As String = My.Computer.FileSystem.SpecialDirectories.Temp & "\CX43TAD.hta"
+    Dim AppAddress As String = My.Application.Info.DirectoryPath
     Sub Main()
+        Dim isLibrary As Boolean = True
         Dim xmldoc As New XmlDocument : Dim xmlnode As XmlNodeList
         Dim No, Yayinevi, KitapIsmi, InternetSitesi, SonSayfa, Sinif(1), Tur(1), Brans(1), title, web, html As String : Dim i As Integer = 0
         html = "" : title = "" : web = ""
         'search in directories
-        Dim dirs As String() = Directory.GetDirectories(My.Application.Info.DirectoryPath)
+        Dim dirs As String() = Directory.GetDirectories(AppAddress)
         For Each Dir As String In dirs
             'eğer atu klasörü ise işleme devam et
             If File.Exists(Dir & "\atu.exe") And File.Exists(Dir & "\Book\Data\info.xml") Then
@@ -50,12 +53,16 @@ Module main
                 If No = "" Then No = i
                 If title = "" Then title = Yayinevi
                 If web = "" Then web = InternetSitesi
-                If html <> "" Then html &= ","
                 If lstSinif.Contains(Sinif(1)) = False Then lstSinif.Add(Sinif(1)) : lstSinifID.Add(Sinif(0))
                 If lstBrans.Contains(Brans(1)) = False Then lstBrans.Add(Brans(1)) : lstBransID.Add(Brans(0))
                 If lstTur.Contains(Tur(1)) = False Then lstTur.Add(Tur(1)) : lstTurID.Add(Tur(0))
                 'her kitap için bir satır yaz
-                html &= WriteBook2(No, KitapIsmi, klasoryolu, Dir & "\atu.exe", SonSayfa, Tur(1), Tur(0), Brans(1), Brans(0), Sinif(1), Sinif(0))
+                If isLibrary = True Then
+                    If html <> "" Then html &= ","
+                    html &= WriteBook2(No, KitapIsmi, klasoryolu, Dir & "\atu.exe", SonSayfa, Tur(1), Tur(0), Brans(1), Brans(0), Sinif(1), Sinif(0))
+                Else
+                    html &= WriteBook(Dir & "\atu.exe", Yayinevi.Replace(" Yayınları", "") & " " & KitapIsmi, klasoryolu)
+                End If
                 'kapat
                 fs.Close() : fs.Dispose()
             End If
@@ -66,25 +73,25 @@ Module main
             'genişliği bul
             Dim genislik As Integer = 200 * i : If genislik > 1000 Then genislik = 1000
             'sayfayı yazdır
-            html = WriteHta(True, True, genislik, title, web) & html & WriteHta(True, False)
+            html = WriteHta(isLibrary, True, genislik, title, web) & html & WriteHta(isLibrary, False)
             'hta yazdır
-            File.Delete(My.Application.Info.DirectoryPath & "\Autorun\Autorun.hta")
-            Dim objWriter As New System.IO.StreamWriter(My.Application.Info.DirectoryPath & "\Autorun\Autorun.hta")
+            File.Delete(HtaAddress)
+            Dim objWriter As New System.IO.StreamWriter(HtaAddress)
             objWriter.Write(html)
             objWriter.Close()
             've başlat
-            Shell("explorer.exe " & My.Application.Info.DirectoryPath & "\Autorun\Autorun.hta")
+            Shell("explorer.exe " & HtaAddress)
         End If
     End Sub
     'az kitap için sadece resmi ve adı yazılıyor
     Private Function WriteBook(ExeFile As String, title As String, foldername As String) As String
-        Dim kapak As String = IIf(File.Exists(My.Application.Info.DirectoryPath & foldername & "\Book\Images\Pages\Thumbs\Cover.etf") = True, "../" & foldername & "/Book/Images/Pages/Thumbs/cover.etf", "../" & foldername & "/Book/Images/Pages/Thumbs/Sayfa1.etf")
+        Dim kapak As String = IIf(File.Exists(AppAddress & "\" & foldername & "\Book\Images\Pages\Thumbs\Cover.etf") = True, "file:///" & AppAddress.Replace("\", "/") & "/" & foldername & "/Book/Images/Pages/Thumbs/cover.etf", "file:///" & AppAddress.Replace("\", "/") & "/" & foldername & "/Book/Images/Pages/Thumbs/Sayfa1.etf")
         Return "<div class=""cerceve""><a href=""#"" onclick=""RunFile('file:///" & ExeFile.Replace("\", "/") & "');"" title=""" & title & """><img src=""" & kapak & """ height=""180"" /></a><h3>" & title & "</h3></div>"
     End Function
     'kitaplık için tüm bilgileri yazılıyor
     Private Function WriteBook2(id As Integer, title As String, foldername As String, ExeFile As String, SonSayfa As String, category As String, categoryid As String, brans As String, bransid As String, sinif As String, sinifid As String) As String
         Dim aciklama = "Çözümlü Sorular ve cevap anahtarları eksiklerinizi göstermez Konu sütunlarına yerleştirilen anahtar bilgiler ile başka bir kaynağa ihtiyaç duymadan cevabı kendiniz bularak konuyu pekiştirebilirsiniz."
-        Dim kapak As String = "../" & foldername & "/Book/Images/Pages/Thumbs/cover.etf"
+        Dim kapak As String = "file:///" & AppAddress.Replace("\", "/") & "/" & foldername & "/Book/Images/Pages/Thumbs/cover.etf"
         Dim url As String = "file:///" & ExeFile.Replace("\", "/")
         Return "{""id"":""" & id & """,""title"":""" & title & """,""description"":""" & aciklama & """,""url"":""" & url & """,""pages"":""" & SonSayfa & """,""kapak"":""" & kapak & """,""categoryname"":""" & category & """,""categoryid"":""" & categoryid & """,""brans"":""" & brans & """,""bransid"":""" & bransid & """,""sinif"":""" & sinif & """,""sinifid"":""" & sinifid & """,""label"":""0""}"
     End Function
@@ -94,20 +101,20 @@ Module main
         If isLibrary = True Then
             If isBeginning = True Then
                 html = "<!DOCTYPE html><html><head><meta http-equiv=""X-UA-Compatible"" content=""IE=edge;"" /><meta charset=""utf-8""><meta http-equiv=""content-type"" content=""text/html; charset=utf-8"" /><meta content=""tr_TR"" http-equiv=""Content-Language""><title>" & yayinevi & "</title>"
-                html &= "<HTA:APPLICATION ID=""oMyApp"" APPLICATIONNAME = ""Application Executer"" BORDER = ""no"" CAPTION = ""yes"" ShowInTaskbar = ""yes"" SINGLEINSTANCE = ""yes"" SYSMENU = ""yes"" Scroll = ""no"" WINDOWSTATE=""normal"" MAXIMIZEBUTTON=""Yes"" SELECTION=""no"" ICON=""Autorun.ico"" />"
-                html &= "<style>body{background:url(Background2.jpg) no-repeat center center fixed;background-size:cover;padding:0;margin:0;}</style>"
-                html &= "<LINK href=""Autorun.ico"" rel=""SHORTCUT ICON""/><link href=""Includes/Bookcase.min.css"" rel=""stylesheet""/></head><body>"
+                html &= "<HTA:APPLICATION ID=""oMyApp"" APPLICATIONNAME = ""Application Executer"" BORDER = ""no"" CAPTION = ""yes"" ShowInTaskbar = ""yes"" SINGLEINSTANCE = ""yes"" SYSMENU = ""yes"" Scroll = ""no"" WINDOWSTATE=""normal"" MAXIMIZEBUTTON=""Yes"" SELECTION=""no"" ICON=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Autorun.ico"" />"
+                html &= "<style>body{background:url(file:///" & AppAddress.Replace("\", "/") & "/Autorun/Background2.jpg) no-repeat center center fixed;background-size:cover;padding:0;margin:0;}</style>"
+                html &= "<LINK href=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Autorun.ico"" rel=""SHORTCUT ICON""/><link href=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Includes/Bookcase.min.css"" rel=""stylesheet""/></head><body>"
                 html &= "<div class=""main-container""></div>"
-                html &= "<script src=""Includes/jquery.min.js""></script>"
-                html &= "<script src=""Includes/md5.js""></script>"
-                html &= "<script src=""Includes/hammer.min.js""></script>"
-                html &= "<script src=""Includes/jquery.hammer.min.js""></script>"
-                html &= "<script src=""Includes/jquery.qrcode.min.js""></script>"
-                html &= "<script src=""Includes/bookcase.min.js""></script>"
+                html &= "<script src=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Includes/jquery.min.js""></script>"
+                html &= "<script src=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Includes/md5.js""></script>"
+                html &= "<script src=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Includes/hammer.min.js""></script>"
+                html &= "<script src=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Includes/jquery.hammer.min.js""></script>"
+                html &= "<script src=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Includes/jquery.qrcode.min.js""></script>"
+                html &= "<script src=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Includes/bookcase.min.js""></script>"
                 html &= "<script type=""text/javascript"" language=""javascript"">window.resizeTo(1100,770);window.moveTo(0,0);function RunFile(src){WshShell = new ActiveXObject(""WScript.Shell"");WshShell.Run(src, 1, false);window.close();};"
 
                 html &= "(function ($) {$(function () {"
-                html &= "var userData = {title:""" & yayinevi & """,name:""" & yayinevi & """, email:""info@surat.gen.tr"",website:""" & web & """,logoLink:""" & web & """,logoAddress:""Logo.png"",accountLogo:""Logo.jpg"",skin:"""","
+                html &= "var userData = {title:""" & yayinevi & """,name:""" & yayinevi & """, email:""info@surat.gen.tr"",website:""" & web & """,logoLink:""" & web & """,logoAddress:""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Logo.png"",accountLogo:""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Logo.jpg"",skin:"""",path:""file:///" & AppAddress.Replace("\", "/") & ""","
                 html &= "isShowShare:""1"",isShowContact:""1"",isShowSearch:""1"",isShowSkin:""0"",isShowCategory:""1"",isShowLogo:""1"",openType:""0"",isSelf:""0"",about:""İlkokuldan Üniversiteye Kadar""};"
                 'function Bookcase($container, userData, data, cateData, classData, departmentData)
                 html &= "new Bookcase($("".main-container""),userData,["
@@ -145,10 +152,10 @@ Module main
         Else
             If isBeginning = True Then
                 html = "<!DOCTYPE html><html><head><meta http-equiv=""X-UA-Compatible"" content=""IE=edge;"" /><meta charset=""utf-8""><meta http-equiv=""content-type"" content=""text/html; charset=utf-8"" /><meta content=""tr_TR"" http-equiv=""Content-Language""><title>" & yayinevi & "</title>"
-                html &= "<HTA:APPLICATION ID=""oMyApp"" APPLICATIONNAME = ""Application Executer"" BORDER = ""no"" CAPTION = ""yes"" ShowInTaskbar = ""yes"" SINGLEINSTANCE = ""yes"" SYSMENU = ""yes"" Scroll = ""no"" WINDOWSTATE=""normal"" MAXIMIZEBUTTON=""no"" SELECTION=""no"" ICON=""Autorun.ico"" />"
-                html &= "<style>body{background:url(Background.jpg) no-repeat center center fixed;background-size:cover;min-height:500px;padding:200px 0 0 0;margin:0;}h3{max-width:170px;margin:5px;}"
-                html &= "#panel{width:" & genislik & "px;margin:0 auto;}.cerceve{width:180px;height:300px;padding:0;float:left;margin:0 10px;text-align:center;background:url(Background.png) no-repeat;background-size:100%;}img{border:0;}</style>"
-                html &= "<LINK href=""Autorun.ico"" rel=""SHORTCUT ICON""/></head><body><div id=""panel"">"
+                html &= "<HTA:APPLICATION ID=""oMyApp"" APPLICATIONNAME = ""Application Executer"" BORDER = ""no"" CAPTION = ""yes"" ShowInTaskbar = ""yes"" SINGLEINSTANCE = ""yes"" SYSMENU = ""yes"" Scroll = ""no"" WINDOWSTATE=""normal"" MAXIMIZEBUTTON=""no"" SELECTION=""no"" ICON=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Autorun.ico"" />"
+                html &= "<style>body{background:url(file:///" & AppAddress.Replace("\", "/") & "/Autorun/Background.jpg) no-repeat center center fixed;background-size:cover;min-height:500px;padding:200px 0 0 0;margin:0;}h3{max-width:170px;margin:5px;}"
+                html &= "#panel{width:" & genislik & "px;margin:0 auto;}.cerceve{width:180px;height:300px;padding:0;float:left;margin:0 10px;text-align:center;background:url(file:///" & AppAddress.Replace("\", "/") & "/Autorun/Background.png) no-repeat;background-size:100%;}img{border:0;}</style>"
+                html &= "<LINK href=""" & AppAddress.Replace("\", "/") & "/Autorun/Autorun.ico"" rel=""SHORTCUT ICON""/></head><body><div id=""panel"">"
             Else
                 html = "</div><script type=""text/javascript"" language=""javascript"">window.resizeTo(1024,768);window.moveTo(0,0);window.onresize=function(){window.resizeTo(1024,768);};function RunFile(src){WshShell = new ActiveXObject(""WScript.Shell"");WshShell.Run(src, 1, false);window.close();};</script>"
                 html &= "</body></html>"

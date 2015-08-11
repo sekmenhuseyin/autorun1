@@ -250,7 +250,7 @@ function Bookcase($container, userData, data, cateData, classData, departmentDat
                 window.open(self.data[index]._domainUrl);
                 break;
             default:
-                new BookDetailPanel($(this).clone(), self.data[index]);
+                new BookDetailPanel($(this).clone(), self.data[index], userData.path);
         }
 
     });
@@ -957,10 +957,10 @@ LightBox.prototype = {
     },
 };
 
-function BookDetailPanel($imgWrapper, data) {
+function BookDetailPanel($imgWrapper, data, path) {
 
     this.data = data;
-
+    this.path = path;
     this.boxWidth = 485;
 
     this.lightBox = new LightBox("Ayr&#305;nt&#305;lar", this.boxWidth);
@@ -970,7 +970,7 @@ function BookDetailPanel($imgWrapper, data) {
 
     this.detailContainer = $("<div class='book-detail-container'></div>");
     this.bookContainer = $("<div class='book-detail-book-container'></div>");
-    this.shelf = $("<img class='book-detail-book-shelf' src='Includes/Bookcase/shelf.png'>");
+    this.shelf = $("<img class='book-detail-book-shelf' src='" + path + "/Autorun/Includes/Bookcase/shelf.png'>");
 
     this.title = $("<div class='book-detail-title'>" + data.title + "</div>");
     this.info = $("<div class='book-detail-info'>Sayfa: " + data.pages + "</div>");
