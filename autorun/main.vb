@@ -1,12 +1,11 @@
 ﻿Imports System.IO
 Imports System.Net
-Imports System.Security.Cryptography
 Imports System.Xml
 
 Module main
     Dim lstSinif As List(Of String) = New List(Of String) : Dim lstBrans As List(Of String) = New List(Of String) : Dim lstTur As List(Of String) = New List(Of String)
     Dim lstSinifID As List(Of String) = New List(Of String) : Dim lstBransID As List(Of String) = New List(Of String) : Dim lstTurID As List(Of String) = New List(Of String)
-    Dim HtaFolder As String = My.Computer.FileSystem.SpecialDirectories.CurrentUserApplicationData & "\"
+    Dim HtaFolder As String = My.Computer.FileSystem.SpecialDirectories.CurrentUserApplicationData & "\" : Dim AtuVersion As String = ""
     Dim AppAddress As String = My.Application.Info.DirectoryPath : Dim isler As List(Of Integer) = New List(Of Integer) : Dim islerUpdatable As List(Of Integer) = New List(Of Integer)
     Sub Main()
         Dim isLibrary As Boolean = True
@@ -23,7 +22,7 @@ Module main
             If File.Exists(Dir & "\atu.exe") And File.Exists(Dir & "\Book\Data\info.xml") Then
                 Dim tmp() As String = Dir.Split("\") : Dim klasoryolu As String = tmp(UBound(tmp))
                 No = "" : Yayinevi = "" : KitapIsmi = "" : InternetSitesi = "" : SonSayfa = "" : Sinif(0) = "" : Tur(0) = "" : Brans(0) = "" : Sinif(1) = "" : Tur(1) = "" : Brans(1) = "" : version = "1.0" : i += 1
-                ClearXml(Dir)
+                ClearXml(Dir & "\Book\Data\info.xml", "info")
                 'her kitap için htmlde bir satır oluştur
                 'xmlden okuma bmlünü
                 Dim fs As New FileStream(Dir & "\Book\Data\info.xml", FileMode.Open, FileAccess.Read)
@@ -59,11 +58,24 @@ Module main
                 'kapat
                 fs.Close() : fs.Dispose()
             End If
+            If File.Exists(Dir & "\META-INF\AIR\application.xml") Then
+                ClearXml(Dir & "\META-INF\AIR\application.xml", "application")
+                'xmlden okuma bmlünü
+                Dim fs As New FileStream(Dir & "\META-INF\AIR\application.xml", FileMode.Open, FileAccess.Read)
+                'xml yükle
+                xmldoc.Load(fs) : xmlnode = xmldoc.GetElementsByTagName("application")
+                Dim tmp As String = xmlnode(0).Item("versionNumber").InnerText
+                If AtuVersion = "" Then
+                    AtuVersion = tmp
+                Else
+                    If tmp < AtuVersion Then AtuVersion = tmp
+                End If
+                'kapat
+                fs.Close() : fs.Dispose()
+            End If
         Next
         xmlnode = Nothing : xmldoc = Nothing : dirs = Nothing
         'kitap varsa programı çalıştır
-        'güncelleme zamanı
-        If AskUpdates() = True Then CheckUpdate()
         If i > 0 Then
             'genişliği bul
             Dim genislik As Integer = 200 * i : If genislik > 1000 Then genislik = 1000
@@ -76,6 +88,8 @@ Module main
             objWriter.Close()
             've başlat
             Shell("explorer.exe " & HtaFolder & "Autorun.hta")
+            'güncelleme zamanı
+            If AskUpdates() = True Then CheckUpdate()
         End If
     End Sub
     'az kitap için sadece resmi ve adı yazılıyor
@@ -159,16 +173,16 @@ Module main
         Return html
     End Function
     'Info.xml kontrol
-    Private Sub ClearXml(dir As String)
+    Private Sub ClearXml(xmlPath As String, FirstTag As String)
         'eğer xmlde ilk satır indo değilse hata veriyordu
         'bu yüzden infoda öncesini sildiriyorum
-        Dim objWriter As New StreamReader(dir & "\Book\Data\info.xml")
+        Dim objWriter As New StreamReader(xmlPath)
         Dim alltext = objWriter.ReadToEnd
-        Dim pos = InStr(alltext, "<info>")
+        Dim pos = InStr(alltext, "<" & FirstTag)
         If pos <> 1 Then
             objWriter.Close() : objWriter.Dispose() 'önce açık olanı kapat
             alltext = Mid(alltext, pos) 'info yazısından itibaren yazdır
-            Dim objWriter2 As New StreamWriter(dir & "\Book\Data\info.xml")
+            Dim objWriter2 As New StreamWriter(xmlPath)
             objWriter2.Write(alltext)
             objWriter2.Close() : objWriter2.Dispose()
         Else
@@ -204,8 +218,11 @@ Module main
         Dim updateAutorun As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/1")
         If updateAutorun <> version Then updateAutorun = "yes"
         'atu.exe güncelleme kontrol
-        version = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/2")
-        Dim updateAtu As Boolean = Not CompareWithHash(AppAddress & "\Autorun\dm.db", version)
+        Dim updateAtu As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/2")
+        If updateAtu <> AtuVersion Then updateAtu = "yes"
+        'updater.exe güncelleme kontrol
+        Dim updateUpdater As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/3")
+        If updateUpdater <> My.Settings.UpdaterVersion Then updateAtu = "yes"
         'tüm kitapları tek tek kontrol et
         For Each item In isler
             version = ReadIni(HtaFolder & "setting.ini", "General", item) : If version = "" Then version = "1.0"
@@ -214,12 +231,12 @@ Module main
         Next
         Dim tmp As String = ""
         If updateAutorun = "yes" Then tmp = "   . Kütüphane" & vbCrLf : islerUpdatable.Add("1")
-        If updateAtu = True Then tmp &= "   . Program" & vbCrLf : islerUpdatable.Add("2")
+        If updateAtu = "yes" Then tmp &= "   . Program" & vbCrLf : islerUpdatable.Add("2")
         If KitapSayisi > 0 Then tmp &= "   . " & KitapSayisi & " adet kitap"
         If tmp <> "" Then 'eğer evet derse güncelleme yapacak
             If MsgBox("Güncellenecekler:" & vbCrLf & tmp & vbCrLf & vbCrLf & "Devam etsin mi?", MsgBoxStyle.YesNo + MsgBoxStyle.Question + MsgBoxStyle.MsgBoxSetForeground, "Autorun") = MsgBoxResult.Yes Then Update()
         Else 'güncelleme yoksa kontrol ettik diye kaydet
-            'writeIni(HtaFolder & "setting.ini", "General", "LastUpdate", Now())
+            writeIni(HtaFolder & "setting.ini", "General", "LastUpdate", Now())
         End If
         Exit Sub
     End Sub
@@ -232,14 +249,16 @@ Module main
             Shell(AppAddress & "\Autorun\dm.exe http://www.kaynakkatalog.com/API/Download/" & ticket & " --dir " & HtaFolder & " --out " & item & ".zip", AppWinStyle.Hide, True)
             'eğer item 1 ise bu programın güncellemesi yapılacak, en son olmak zorunda
             If item = 1 Then
-                updateAutoRun = True : File.Delete(AppAddress & "\1.zip") : File.Move(HtaFolder & "1.zip", AppAddress & "\1.zip")
+                updateAutoRun = True : File.Delete(AppAddress & "\update.zip") : File.Move(HtaFolder & "1.zip", AppAddress & "\update.zip")
             ElseIf item = 2 Then '2 ise tüm atular güncellenecek
                 Dim dirs As String() = Directory.GetDirectories(AppAddress)
                 For Each Dir As String In dirs
                     Shell(AppAddress & "\Autorun\7za.exe x """ & HtaFolder & item & ".zip"" -y -o""" & Dir & """") '-pSECRET
                 Next
             ElseIf item = 3 Then '3 ise updater güncellenecek
-                Shell(AppAddress & "\Autorun\7za.exe x """ & HtaFolder & item & ".zip"" -y -o""" & AppAddress & """") '-pSECRET
+                Dim updateUpdater As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/3")
+                My.Settings.UpdaterVersion = updateUpdater
+                Shell(AppAddress & "\Autorun\7za.exe x """ & HtaFolder & item & ".zip"" -y -o""" & AppAddress & "\Autorun""") '-pSECRET
             Else 'değilse sadece seçili zip açılıp kitap güncellenecek
                 Shell(AppAddress & "\Autorun\7za.exe x """ & HtaFolder & item & ".zip"" -y -o""" & AppAddress & """") '-pSECRET
             End If
@@ -248,62 +267,4 @@ Module main
         'writeIni(HtaFolder & "setting.ini", "General", "LastUpdate", Now())
         If updateAutoRun = True Then Shell(AppAddress & "\Autorun\Updater.exe")
     End Sub
-    'returns true if two files passed to is are identical, false otherwise
-    'does byte comparison; works for both text and binary files
-    Private Function CompareFiles(ByVal FileFullPath1 As String, ByVal FileFullPath2 As String) As Boolean
-        Dim objMD5 As New MD5CryptoServiceProvider() : Dim objEncoding As New Text.ASCIIEncoding()
-        Dim aFile1() As Byte, aFile2() As Byte : Dim strContents1, strContents2 As String
-        Dim objReader As StreamReader : Dim objFS As FileStream
-        Dim bAns As Boolean
-        'her iki dosyada biri yoksa aynı değil diye geri gönder
-        If Not File.Exists(FileFullPath1) Or Not File.Exists(FileFullPath2) Then Return False : Exit Function
-        Try
-            'ilk dosya açılır
-            objFS = New FileStream(FileFullPath1, FileMode.Open) : objReader = New StreamReader(objFS)
-            'sonuna kadar okunur
-            aFile1 = objEncoding.GetBytes(objReader.ReadToEnd)
-            'md5 olarak şifrelenir
-            strContents1 = objEncoding.GetString(objMD5.ComputeHash(aFile1))
-            'ilk dosya kapatılır.
-            objReader.Close() : objFS.Close()
-            'ikinci dosya açılır
-            objFS = New FileStream(FileFullPath2, FileMode.Open) : objReader = New StreamReader(objFS)
-            'sonuna kadar okunur
-            aFile2 = objEncoding.GetBytes(objReader.ReadToEnd)
-            'md5 olarak şifrelenir
-            strContents2 = objEncoding.GetString(objMD5.ComputeHash(aFile2))
-            've kapatılır
-            objReader.Close() : objReader.Dispose() : objFS.Close() : objFS.Dispose()
-            aFile1 = Nothing : aFile2 = Nothing
-            'en son olarak karşılaştırma yapılır
-            bAns = strContents1 = strContents2
-        Catch ex As Exception
-            Return False 'hata olursa aynı değil diye gönder
-        End Try
-        Return bAns 'sorun çıkmazsa aynı mı değil mi geri gönder
-    End Function
-    Private Function CompareWithHash(ByVal FileFullPath As String, ByVal HASH As String) As Boolean
-        Dim objMD5 As New MD5CryptoServiceProvider() : Dim objEncoding As New Text.ASCIIEncoding()
-        Dim aFile() As Byte : Dim strContents As String
-        Dim objReader As StreamReader : Dim objFS As FileStream
-        Dim bAns As Boolean
-        'her iki dosyada biri yoksa aynı değil diye geri gönder
-        If Not File.Exists(FileFullPath) Then Return False : Exit Function
-        Try
-            'ilk dosya açılır
-            objFS = New FileStream(FileFullPath, FileMode.Open) : objReader = New StreamReader(objFS)
-            'sonuna kadar okunur
-            aFile = objEncoding.GetBytes(objReader.ReadToEnd)
-            'md5 olarak şifrelenir
-            strContents = aFile.Length()
-            'ilk dosya kapatılır.
-            objReader.Close() : objReader.Dispose() : objFS.Close() : objFS.Dispose()
-            aFile = Nothing
-            'en son olarak karşılaştırma yapılır
-            bAns = strContents = HASH
-        Catch ex As Exception
-            Return False 'hata olursa aynı değil diye gönder
-        End Try
-        Return bAns 'sorun çıkmazsa aynı mı değil mi geri gönder
-    End Function
 End Module
