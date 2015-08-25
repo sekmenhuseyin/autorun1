@@ -1,12 +1,13 @@
 ﻿Imports System.IO
 Imports System.Net
+Imports System.Security.Cryptography
 Imports System.Xml
 
 Module main
     Dim lstSinif As List(Of String) = New List(Of String) : Dim lstBrans As List(Of String) = New List(Of String) : Dim lstTur As List(Of String) = New List(Of String)
     Dim lstSinifID As List(Of String) = New List(Of String) : Dim lstBransID As List(Of String) = New List(Of String) : Dim lstTurID As List(Of String) = New List(Of String)
-    Dim HtaFolder As String = My.Computer.FileSystem.SpecialDirectories.CurrentUserApplicationData & "\Sürat\"
-    Dim AppAddress As String = My.Application.Info.DirectoryPath : Dim isler As List(Of Integer) = New List(Of Integer)
+    Dim HtaFolder As String = My.Computer.FileSystem.SpecialDirectories.CurrentUserApplicationData & "\"
+    Dim AppAddress As String = My.Application.Info.DirectoryPath : Dim isler As List(Of Integer) = New List(Of Integer) : Dim islerUpdatable As List(Of Integer) = New List(Of Integer)
     Sub Main()
         Dim isLibrary As Boolean = True
         Dim xmldoc As New XmlDocument : Dim xmlnode As XmlNodeList
@@ -15,7 +16,6 @@ Module main
         'control
         If Directory.Exists(HtaFolder) = False Then Directory.CreateDirectory(HtaFolder)
         If File.Exists(HtaFolder & "setting.ini") = False Then CreateSettings()
-        Dim CheckForUpdates As Boolean = AskUpdates()
         'search in directories
         Dim dirs As String() = Directory.GetDirectories(AppAddress)
         For Each Dir As String In dirs
@@ -62,6 +62,8 @@ Module main
         Next
         xmlnode = Nothing : xmldoc = Nothing : dirs = Nothing
         'kitap varsa programı çalıştır
+        'güncelleme zamanı
+        If AskUpdates() = True Then CheckUpdate()
         If i > 0 Then
             'genişliği bul
             Dim genislik As Integer = 200 * i : If genislik > 1000 Then genislik = 1000
@@ -75,8 +77,6 @@ Module main
             've başlat
             Shell("explorer.exe " & HtaFolder & "Autorun.hta")
         End If
-        'güncelleme zamanı
-        If CheckForUpdates = True Then CheckUpdate()
     End Sub
     'az kitap için sadece resmi ve adı yazılıyor
     Private Function WriteBook(ExeFile As String, title As String, foldername As String) As String
@@ -97,7 +97,7 @@ Module main
             If isBeginning = True Then
                 html = "<!DOCTYPE html><html><head><meta http-equiv=""X-UA-Compatible"" content=""IE=edge;"" /><meta charset=""utf-8""><meta http-equiv=""content-type"" content=""text/html; charset=utf-8"" /><meta content=""tr_TR"" http-equiv=""Content-Language""><title>" & yayinevi & "</title>"
                 html &= "<HTA:APPLICATION ID=""oMyApp"" APPLICATIONNAME = ""Application Executer"" BORDER = ""no"" CAPTION = ""yes"" ShowInTaskbar = ""yes"" SINGLEINSTANCE = ""yes"" SYSMENU = ""yes"" Scroll = ""no"" WINDOWSTATE=""normal"" MAXIMIZEBUTTON=""Yes"" SELECTION=""no"" ICON=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Autorun.ico"" />"
-                html &= "<style>body{background:url(file:///" & AppAddress.Replace("\", "/") & "/Autorun/Background2.jpg) no-repeat center center fixed;background-size:cover;padding:0;margin:0;}</style>"
+                html &= "<style>body{background:url('file:///" & AppAddress.Replace("\", "/") & "/Autorun/Background2.jpg') no-repeat center center fixed;background-size:cover;padding:0;margin:0;}</style>"
                 html &= "<LINK href=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Autorun.ico"" rel=""SHORTCUT ICON""/><link href=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Includes/Bookcase.min.css"" rel=""stylesheet""/></head><body>"
                 html &= "<div class=""main-container""></div>"
                 html &= "<script src=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Includes/jquery.min.js""></script>"
@@ -148,8 +148,8 @@ Module main
             If isBeginning = True Then
                 html = "<!DOCTYPE html><html><head><meta http-equiv=""X-UA-Compatible"" content=""IE=edge;"" /><meta charset=""utf-8""><meta http-equiv=""content-type"" content=""text/html; charset=utf-8"" /><meta content=""tr_TR"" http-equiv=""Content-Language""><title>" & yayinevi & "</title>"
                 html &= "<HTA:APPLICATION ID=""oMyApp"" APPLICATIONNAME = ""Application Executer"" BORDER = ""no"" CAPTION = ""yes"" ShowInTaskbar = ""yes"" SINGLEINSTANCE = ""yes"" SYSMENU = ""yes"" Scroll = ""no"" WINDOWSTATE=""normal"" MAXIMIZEBUTTON=""no"" SELECTION=""no"" ICON=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Autorun.ico"" />"
-                html &= "<style>body{background:url(file:///" & AppAddress.Replace("\", "/") & "/Autorun/Background.jpg) no-repeat center center fixed;background-size:cover;min-height:500px;padding:200px 0 0 0;margin:0;}h3{max-width:170px;margin:5px;}"
-                html &= "#panel{width:" & genislik & "px;margin:0 auto;}.cerceve{width:180px;height:300px;padding:0;float:left;margin:0 10px;text-align:center;background:url(file:///" & AppAddress.Replace("\", "/") & "/Autorun/Background.png) no-repeat;background-size:100%;}img{border:0;}</style>"
+                html &= "<style>body{background:url('file:///" & AppAddress.Replace("\", "/") & "/Autorun/Background.jpg') no-repeat center center fixed;background-size:cover;min-height:500px;padding:200px 0 0 0;margin:0;}h3{max-width:170px;margin:5px;}"
+                html &= "#panel{width:" & genislik & "px;margin:0 auto;}.cerceve{width:180px;height:300px;padding:0;float:left;margin:0 10px;text-align:center;background:url('file:///" & AppAddress.Replace("\", "/") & "/Autorun/Background.png') no-repeat;background-size:100%;}img{border:0;}</style>"
                 html &= "<LINK href=""" & AppAddress.Replace("\", "/") & "/Autorun/Autorun.ico"" rel=""SHORTCUT ICON""/></head><body><div id=""panel"">"
             Else
                 html = "</div><script type=""text/javascript"" language=""javascript"">window.resizeTo(1024,768);window.moveTo(0,0);window.onresize=function(){window.resizeTo(1024,768);};function RunFile(src){WshShell = new ActiveXObject(""WScript.Shell"");WshShell.Run(src, 1, false);window.close();};</script>"
@@ -177,21 +177,21 @@ Module main
     End Sub
     'create default settings file
     Private Sub CreateSettings()
-        writeIni(HtaFolder & "setting.ini", "General", "LastCheck", Now())
+        writeIni(HtaFolder & "setting.ini", "General", "LastUpdate", Now())
         writeIni(HtaFolder & "setting.ini", "General", "CountOfNos", "0")
     End Sub
     'güncelleme yapsın mı
     Private Function AskUpdates() As Boolean
         Dim CheckForUpdates As Boolean = False
-        Dim LastCheck As DateTime = Convert.ToDateTime(ReadIni(HtaFolder & "setting.ini", "General", "LastCheck"))
+        Dim LastUpdate As DateTime = Convert.ToDateTime(ReadIni(HtaFolder & "setting.ini", "General", "LastUpdate"))
         Dim CountOfNos As Int16 = Convert.ToInt16(ReadIni(HtaFolder & "setting.ini", "General", "CountOfNos"))
-        If LastCheck < Now().AddDays(-30) Then
+        If LastUpdate < Now().AddDays(-60) Then
             If MsgBox("Güncellemeleri kontrol etmek ister misiniz?", MsgBoxStyle.Question + MsgBoxStyle.YesNo + MsgBoxStyle.MsgBoxSetForeground, "Autorun") = MsgBoxResult.Yes Then
                 CheckForUpdates = True
                 writeIni(HtaFolder & "setting.ini", "General", "CountOfNos", "0")
             Else
                 writeIni(HtaFolder & "setting.ini", "General", "CountOfNos", CountOfNos + 1)
-                If CountOfNos > 3 Then writeIni(HtaFolder & "setting.ini", "General", "LastCheck", Now().AddMonths(6)) : writeIni(HtaFolder & "setting.ini", "General", "CountOfNos", "0")
+                If CountOfNos > 3 Then writeIni(HtaFolder & "setting.ini", "General", "LastUpdate", Now().AddMonths(6)) : writeIni(HtaFolder & "setting.ini", "General", "CountOfNos", "0")
             End If
         End If
         Return CheckForUpdates
@@ -201,28 +201,109 @@ Module main
         Dim webClient As New WebClient : Dim KitapSayisi As Integer = 0 : Dim version As String
         'autorun.exe güncelleme kontrol
         version = My.Application.Info.Version.Major & "." & My.Application.Info.Version.Minor
-        Dim updateAutorun As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates").Replace("""", "")
+        Dim updateAutorun As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/1")
         If updateAutorun <> version Then updateAutorun = "yes"
         'atu.exe güncelleme kontrol
+        version = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/2")
+        Dim updateAtu As Boolean = Not CompareWithHash(AppAddress & "\Autorun\dm.db", version)
         'tüm kitapları tek tek kontrol et
         For Each item In isler
             version = ReadIni(HtaFolder & "setting.ini", "General", item) : If version = "" Then version = "1.0"
-            Dim updateKitap As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/" & item).Replace("""", "") : If updateKitap = "" Then updateKitap = "1.0"
-            If updateKitap <> version Then KitapSayisi += 1
+            Dim updateKitap As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/" & item)
+            If updateKitap <> version Then KitapSayisi += 1 : islerUpdatable.Add(item)
         Next
         Dim tmp As String = ""
-        If updateAutorun = "yes" Then tmp = "Program güncellenecek." & vbCrLf
-        If KitapSayisi > 0 Then tmp &= KitapSayisi & " adet kitap güncellenecek."
-        If tmp <> "" Then
-            If MsgBox(tmp, MsgBoxStyle.YesNo + MsgBoxStyle.Question + MsgBoxStyle.MsgBoxSetForeground, "Autorun") = MsgBoxResult.Yes Then
-                Update()
-                writeIni(HtaFolder & "setting.ini", "General", "LastCheck", Now())
-            End If
+        If updateAutorun = "yes" Then tmp = "   . Kütüphane" & vbCrLf : islerUpdatable.Add("1")
+        If updateAtu = True Then tmp &= "   . Program" & vbCrLf : islerUpdatable.Add("2")
+        If KitapSayisi > 0 Then tmp &= "   . " & KitapSayisi & " adet kitap"
+        If tmp <> "" Then 'eğer evet derse güncelleme yapacak
+            If MsgBox("Güncellenecekler:" & vbCrLf & tmp & vbCrLf & vbCrLf & "Devam etsin mi?", MsgBoxStyle.YesNo + MsgBoxStyle.Question + MsgBoxStyle.MsgBoxSetForeground, "Autorun") = MsgBoxResult.Yes Then Update()
+        Else 'güncelleme yoksa kontrol ettik diye kaydet
+            'writeIni(HtaFolder & "setting.ini", "General", "LastUpdate", Now())
         End If
         Exit Sub
     End Sub
     'güncelleme
     Private Sub Update()
-
+        Dim webClient As New WebClient : Dim ticket As String : Dim updateAutoRun As Boolean = False
+        For Each item In islerUpdatable
+            File.Delete(HtaFolder & item & ".zip")
+            ticket = webClient.DownloadString("http://kaynakkatalog.com/API/CreateTicket/" & item)
+            Shell(AppAddress & "\Autorun\dm.exe http://www.kaynakkatalog.com/API/Download/" & ticket & " --dir " & HtaFolder & " --out " & item & ".zip", AppWinStyle.Hide, True)
+            'eğer item 1 ise bu programın güncellemesi yapılacak, en son olmak zorunda
+            If item = 1 Then
+                updateAutoRun = True : File.Delete(AppAddress & "\1.zip") : File.Move(HtaFolder & "1.zip", AppAddress & "\1.zip")
+            ElseIf item = 2 Then '2 ise tüm atular güncellenecek
+                Dim dirs As String() = Directory.GetDirectories(AppAddress)
+                For Each Dir As String In dirs
+                    Shell(AppAddress & "\Autorun\7za.exe x """ & HtaFolder & item & ".zip"" -y -o""" & Dir & """") '-pSECRET
+                Next
+            ElseIf item = 3 Then '3 ise updater güncellenecek
+                Shell(AppAddress & "\Autorun\7za.exe x """ & HtaFolder & item & ".zip"" -y -o""" & AppAddress & """") '-pSECRET
+            Else 'değilse sadece seçili zip açılıp kitap güncellenecek
+                Shell(AppAddress & "\Autorun\7za.exe x """ & HtaFolder & item & ".zip"" -y -o""" & AppAddress & """") '-pSECRET
+            End If
+            If item > 1 Then File.Delete(HtaFolder & item & ".zip")
+        Next
+        'writeIni(HtaFolder & "setting.ini", "General", "LastUpdate", Now())
+        If updateAutoRun = True Then Shell(AppAddress & "\Autorun\Updater.exe")
     End Sub
+    'returns true if two files passed to is are identical, false otherwise
+    'does byte comparison; works for both text and binary files
+    Private Function CompareFiles(ByVal FileFullPath1 As String, ByVal FileFullPath2 As String) As Boolean
+        Dim objMD5 As New MD5CryptoServiceProvider() : Dim objEncoding As New Text.ASCIIEncoding()
+        Dim aFile1() As Byte, aFile2() As Byte : Dim strContents1, strContents2 As String
+        Dim objReader As StreamReader : Dim objFS As FileStream
+        Dim bAns As Boolean
+        'her iki dosyada biri yoksa aynı değil diye geri gönder
+        If Not File.Exists(FileFullPath1) Or Not File.Exists(FileFullPath2) Then Return False : Exit Function
+        Try
+            'ilk dosya açılır
+            objFS = New FileStream(FileFullPath1, FileMode.Open) : objReader = New StreamReader(objFS)
+            'sonuna kadar okunur
+            aFile1 = objEncoding.GetBytes(objReader.ReadToEnd)
+            'md5 olarak şifrelenir
+            strContents1 = objEncoding.GetString(objMD5.ComputeHash(aFile1))
+            'ilk dosya kapatılır.
+            objReader.Close() : objFS.Close()
+            'ikinci dosya açılır
+            objFS = New FileStream(FileFullPath2, FileMode.Open) : objReader = New StreamReader(objFS)
+            'sonuna kadar okunur
+            aFile2 = objEncoding.GetBytes(objReader.ReadToEnd)
+            'md5 olarak şifrelenir
+            strContents2 = objEncoding.GetString(objMD5.ComputeHash(aFile2))
+            've kapatılır
+            objReader.Close() : objReader.Dispose() : objFS.Close() : objFS.Dispose()
+            aFile1 = Nothing : aFile2 = Nothing
+            'en son olarak karşılaştırma yapılır
+            bAns = strContents1 = strContents2
+        Catch ex As Exception
+            Return False 'hata olursa aynı değil diye gönder
+        End Try
+        Return bAns 'sorun çıkmazsa aynı mı değil mi geri gönder
+    End Function
+    Private Function CompareWithHash(ByVal FileFullPath As String, ByVal HASH As String) As Boolean
+        Dim objMD5 As New MD5CryptoServiceProvider() : Dim objEncoding As New Text.ASCIIEncoding()
+        Dim aFile() As Byte : Dim strContents As String
+        Dim objReader As StreamReader : Dim objFS As FileStream
+        Dim bAns As Boolean
+        'her iki dosyada biri yoksa aynı değil diye geri gönder
+        If Not File.Exists(FileFullPath) Then Return False : Exit Function
+        Try
+            'ilk dosya açılır
+            objFS = New FileStream(FileFullPath, FileMode.Open) : objReader = New StreamReader(objFS)
+            'sonuna kadar okunur
+            aFile = objEncoding.GetBytes(objReader.ReadToEnd)
+            'md5 olarak şifrelenir
+            strContents = aFile.Length()
+            'ilk dosya kapatılır.
+            objReader.Close() : objReader.Dispose() : objFS.Close() : objFS.Dispose()
+            aFile = Nothing
+            'en son olarak karşılaştırma yapılır
+            bAns = strContents = HASH
+        Catch ex As Exception
+            Return False 'hata olursa aynı değil diye gönder
+        End Try
+        Return bAns 'sorun çıkmazsa aynı mı değil mi geri gönder
+    End Function
 End Module
