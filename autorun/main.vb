@@ -3,6 +3,7 @@ Imports System.Net
 Imports System.Xml
 
 Module main
+    'genel değişkenler
     Dim lstSinif As List(Of String) = New List(Of String) : Dim lstBrans As List(Of String) = New List(Of String) : Dim lstTur As List(Of String) = New List(Of String)
     Dim lstSinifID As List(Of String) = New List(Of String) : Dim lstBransID As List(Of String) = New List(Of String) : Dim lstTurID As List(Of String) = New List(Of String)
     Dim HtaFolder As String = My.Computer.FileSystem.SpecialDirectories.CurrentUserApplicationData & "\" : Dim AtuVersion As String = ""
@@ -59,7 +60,6 @@ Module main
                 fs.Close() : fs.Dispose()
             End If
             If File.Exists(Dir & "\META-INF\AIR\application.xml") Then
-                ClearXml(Dir & "\META-INF\AIR\application.xml", "application")
                 'xmlden okuma bmlünü
                 Dim fs As New FileStream(Dir & "\META-INF\AIR\application.xml", FileMode.Open, FileAccess.Read)
                 'xml yükle
@@ -215,18 +215,18 @@ Module main
         Dim webClient As New WebClient : Dim KitapSayisi As Integer = 0 : Dim version As String
         'autorun.exe güncelleme kontrol
         version = My.Application.Info.Version.Major & "." & My.Application.Info.Version.Minor
-        Dim updateAutorun As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/1")
+        Dim updateAutorun As String = webClient.DownloadString("http://212.175.211.198/API/CheckUpdates/1")
         If updateAutorun <> version Then updateAutorun = "yes"
         'atu.exe güncelleme kontrol
-        Dim updateAtu As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/2")
+        Dim updateAtu As String = webClient.DownloadString("http://212.175.211.198/API/CheckUpdates/2")
         If updateAtu <> AtuVersion Then updateAtu = "yes"
         'updater.exe güncelleme kontrol
-        Dim updateUpdater As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/3")
+        Dim updateUpdater As String = webClient.DownloadString("http://212.175.211.198/API/CheckUpdates/3")
         If updateUpdater <> My.Settings.UpdaterVersion Then updateAtu = "yes"
         'tüm kitapları tek tek kontrol et
         For Each item In isler
             version = ReadIni(HtaFolder & "setting.ini", "General", item) : If version = "" Then version = "1.0"
-            Dim updateKitap As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/" & item)
+            Dim updateKitap As String = webClient.DownloadString("http://212.175.211.198/API/CheckUpdates/" & item)
             If updateKitap <> version Then KitapSayisi += 1 : islerUpdatable.Add(item)
         Next
         Dim tmp As String = ""
@@ -245,26 +245,26 @@ Module main
         Dim webClient As New WebClient : Dim ticket As String : Dim updateAutoRun As Boolean = False
         For Each item In islerUpdatable
             File.Delete(HtaFolder & item & ".zip")
-            ticket = webClient.DownloadString("http://kaynakkatalog.com/API/CreateTicket/" & item)
-            Shell(AppAddress & "\Autorun\dm.exe http://www.kaynakkatalog.com/API/Download/" & ticket & " --dir " & HtaFolder & " --out " & item & ".zip", AppWinStyle.Hide, True)
+            ticket = webClient.DownloadString("http://212.175.211.198/API/CreateTicket/" & item)
+            Shell(AppAddress & "\Autorun\dm.exe http://212.175.211.198/API/Download/" & ticket & " --dir " & HtaFolder & " --out " & item & ".zip", AppWinStyle.Hide, True)
             'eğer item 1 ise bu programın güncellemesi yapılacak, en son olmak zorunda
             If item = 1 Then
                 updateAutoRun = True : File.Delete(AppAddress & "\update.zip") : File.Move(HtaFolder & "1.zip", AppAddress & "\update.zip")
+
             ElseIf item = 2 Then '2 ise tüm atular güncellenecek
                 Dim dirs As String() = Directory.GetDirectories(AppAddress)
                 For Each Dir As String In dirs
-                    Shell(AppAddress & "\Autorun\7za.exe x """ & HtaFolder & item & ".zip"" -y -o""" & Dir & """") '-pSECRET
+                    If File.Exists(Dir & "\atu.exe") Then Shell(AppAddress & "\Autorun\7za.exe x """ & HtaFolder & item & ".zip"" -y -o""" & Dir & """", AppWinStyle.Hide, True)
                 Next
-            ElseIf item = 3 Then '3 ise updater güncellenecek
-                Dim updateUpdater As String = webClient.DownloadString("http://kaynakkatalog.com/API/CheckUpdates/3")
-                My.Settings.UpdaterVersion = updateUpdater
-                Shell(AppAddress & "\Autorun\7za.exe x """ & HtaFolder & item & ".zip"" -y -o""" & AppAddress & "\Autorun""") '-pSECRET
+
             Else 'değilse sadece seçili zip açılıp kitap güncellenecek
-                Shell(AppAddress & "\Autorun\7za.exe x """ & HtaFolder & item & ".zip"" -y -o""" & AppAddress & """") '-pSECRET
+                Shell(AppAddress & "\Autorun\7za.exe x """ & HtaFolder & item & ".zip"" -y -o""" & AppAddress & """", AppWinStyle.Hide, True)
+
             End If
-            If item > 1 Then File.Delete(HtaFolder & item & ".zip")
+            File.Delete(HtaFolder & item & ".zip")
         Next
-        'writeIni(HtaFolder & "setting.ini", "General", "LastUpdate", Now())
-        If updateAutoRun = True Then Shell(AppAddress & "\Autorun\Updater.exe")
+        writeIni(HtaFolder & "setting.ini", "General", "LastUpdate", Now())
+        File.SetAttributes(AppAddress & "\Updater.exe", FileAttribute.Hidden)
+        If updateAutoRun = True Then Shell(AppAddress & "\Updater.exe")
     End Sub
 End Module

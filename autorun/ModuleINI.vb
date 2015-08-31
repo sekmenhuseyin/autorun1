@@ -9,7 +9,6 @@
                                     ByVal lpKeyName As String, ByVal lpDefault As String,
                                     ByVal lpReturnedString As String, ByVal nSize As Int32,
                                     ByVal lpFileName As String) As Int32
-
     Public Sub writeIni(ByVal iniFileName As String, ByVal Section As String, ByVal ParamName As String, ByVal ParamVal As String)
         Dim Result As Integer = WritePrivateProfileString(Section, ParamName, ParamVal, iniFileName)
     End Sub
