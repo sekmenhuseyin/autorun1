@@ -738,9 +738,8 @@ Bookcase.prototype = {
                         $label = $("<img class='book-label' src='" + this.getLabelFilePath(this.data[index].label) + "'>");
                         $priceLabel = $("<div class='price-label' title='" + this.data[index].sinif + "'>" + this.data[index].sinif + "</div>");
 
-                        if (this.data[index].label == "0") {
-                            $label.hide();
-                        }
+                        if (this.data[index].label == "0") { $label.hide(); }
+                        if (this.data[index].label == "-1") { $label.hide(); $img.addClass("bright"); }
 
                         $bookContianer
                             .append($imgWrapper
@@ -976,9 +975,13 @@ function BookDetailPanel($imgWrapper, data, path) {
     this.info = $("<div class='book-detail-info'>Sayfa: " + data.pages + "</div>");
     this.desc = $("<div class='book-detail-desc' title='" + data.description + "'>" + data.description + "</div>");
     this.viewButton = $("<div class='button button-blue button-rounded button-block button-large'>A&ccedil;</div>");
+    this.downloadButton = $("<div class='button button-blue button-rounded button-block button-large'>&#304;ndir</div>");
+
+    if (this.data.label == "-1") { this.viewButton.addClass("hide"); } else { this.downloadButton.addClass("hide"); }
 
     $imgWrapper.hammer().on("tap", this.view.bind(this));
     this.viewButton.hammer().on("tap", this.view.bind(this));
+    this.downloadButton.hammer().on("tap", this.view.bind(this));
 
     this.lightBox.getPanel()
         .append(this.detailContainer
@@ -989,6 +992,7 @@ function BookDetailPanel($imgWrapper, data, path) {
             .append(this.info)
             .append(this.desc)
             .append(this.viewButton)
+            .append(this.downloadButton)
         )
     ;
 
@@ -1021,7 +1025,7 @@ function UserDetailPanel(data) {
     this.userInfoGroup = $("<div class='left user-info-group'></div>");
     this.userName = $("<p>" + data.name + "</p>");
     this.userAbout = $("<p>" + data.about + "</p>");
-    this.userWebsite = $("<p><strong>Web:</strong> <a target='_blank' href='" + (data.website.match("https?://") ? data.website : "//" + data.website) + "'>" + data.website + "</a></p>");
+    this.userWebsite = $("<p><strong>Web:</strong> <a target='_blank' href='http://" + data.website + "'>http://" + data.website + "</a></p>");
     if (data.website == "") {
         this.userWebsite.addClass('hide');
     }

@@ -9,6 +9,14 @@ Module main
     Dim HtaFolder As String = My.Computer.FileSystem.SpecialDirectories.CurrentUserApplicationData & "\" : Dim AtuVersion As String = ""
     Dim AppAddress As String = My.Application.Info.DirectoryPath : Dim isler As List(Of Integer) = New List(Of Integer) : Dim islerUpdatable As List(Of Integer) = New List(Of Integer)
     Sub Main()
+        Dim arguments As String() = Environment.GetCommandLineArgs()
+        If arguments.Length = 2 Then
+            If IsNumeric(arguments(1)) = True Then
+                islerUpdatable.Add(arguments(1))
+                Update()
+                Exit Sub
+            End If
+        End If
         Dim isLibrary As Boolean = True
         Dim xmldoc As New XmlDocument : Dim xmlnode As XmlNodeList
         Dim No, Yayinevi, KitapIsmi, InternetSitesi, SonSayfa, Sinif(1), Tur(1), Brans(1), title, web, html, version As String : Dim i As Integer = 0
@@ -20,10 +28,10 @@ Module main
         Dim dirs As String() = Directory.GetDirectories(AppAddress)
         For Each Dir As String In dirs
             'eğer atu klasörü ise işleme devam et
-            If File.Exists(Dir & "\atu.exe") And File.Exists(Dir & "\Book\Data\info.xml") Then
+            If File.Exists(Dir & "\Book\Data\info.xml") Then
                 Dim tmp() As String = Dir.Split("\") : Dim klasoryolu As String = tmp(UBound(tmp))
                 No = "" : Yayinevi = "" : KitapIsmi = "" : InternetSitesi = "" : SonSayfa = "" : Sinif(0) = "" : Tur(0) = "" : Brans(0) = "" : Sinif(1) = "" : Tur(1) = "" : Brans(1) = "" : version = "1.0" : i += 1
-                ClearXml(Dir & "\Book\Data\info.xml", "info")
+                'ClearXml(Dir & "\Book\Data\info.xml", "info")
                 'her kitap için htmlde bir satır oluştur
                 'xmlden okuma bmlünü
                 Dim fs As New FileStream(Dir & "\Book\Data\info.xml", FileMode.Open, FileAccess.Read)
@@ -52,7 +60,11 @@ Module main
                 'her kitap için bir satır yaz
                 If isLibrary = True Then
                     If html <> "" Then html &= ","
-                    html &= WriteBook2(No, KitapIsmi, klasoryolu, Dir & "\atu.exe", SonSayfa, Tur(1), Tur(0), Brans(1), Brans(0), Sinif(1), Sinif(0))
+                    If File.Exists(Dir & "\atu.exe") Then 'kitap varsa
+                        html &= WriteBook2(No, KitapIsmi, klasoryolu, Dir & "\atu.exe", SonSayfa, Tur(1), Tur(0), Brans(1), Brans(0), Sinif(1), Sinif(0), "0")
+                    Else 'demo ise
+                        html &= WriteBook2(No, KitapIsmi, klasoryolu, AppAddress & "\" & My.Application.Info.AssemblyName & ".exe " & No, SonSayfa, Tur(1), Tur(0), Brans(1), Brans(0), Sinif(1), Sinif(0), "-1")
+                    End If
                 Else
                     html &= WriteBook(Dir & "\atu.exe", Yayinevi.Replace(" Yayınları", "").Replace(" Yayın", "").Replace(" Publishing", "") & " " & KitapIsmi, klasoryolu)
                 End If
@@ -98,11 +110,11 @@ Module main
         Return "<div class=""cerceve""><a href=""#"" onclick=""RunFile('file:///" & ExeFile.Replace("\", "/") & "');"" title=""" & title & """><img src=""" & kapak & """ height=""180"" /></a><h3>" & title & "</h3></div>"
     End Function
     'kitaplık için tüm bilgileri yazılıyor
-    Private Function WriteBook2(id As Integer, title As String, foldername As String, ExeFile As String, SonSayfa As String, category As String, categoryid As String, brans As String, bransid As String, sinif As String, sinifid As String) As String
+    Private Function WriteBook2(id As Integer, title As String, foldername As String, ExeFile As String, SonSayfa As String, category As String, categoryid As String, brans As String, bransid As String, sinif As String, sinifid As String, label As String) As String
         Dim aciklama = "Çözümlü Sorular ve cevap anahtarları eksiklerinizi göstermez Konu sütunlarına yerleştirilen anahtar bilgiler ile başka bir kaynağa ihtiyaç duymadan cevabı kendiniz bularak konuyu pekiştirebilirsiniz."
         Dim kapak As String = "file:///" & AppAddress.Replace("\", "/") & "/" & foldername & "/Book/Images/Pages/Thumbs/cover.etf"
         Dim url As String = "file:///" & ExeFile.Replace("\", "/")
-        Return "{""id"":""" & id & """,""title"":""" & title & """,""description"":""" & aciklama & """,""url"":""" & url & """,""pages"":""" & SonSayfa & """,""kapak"":""" & kapak & """,""categoryname"":""" & category & """,""categoryid"":""" & categoryid & """,""brans"":""" & brans & """,""bransid"":""" & bransid & """,""sinif"":""" & sinif & """,""sinifid"":""" & sinifid & """,""label"":""0""}"
+        Return "{""id"":""" & id & """,""title"":""" & title & """,""description"":""" & aciklama & """,""url"":""" & url & """,""pages"":""" & SonSayfa & """,""kapak"":""" & kapak & """,""categoryname"":""" & category & """,""categoryid"":""" & categoryid & """,""brans"":""" & brans & """,""bransid"":""" & bransid & """,""sinif"":""" & sinif & """,""sinifid"":""" & sinifid & """,""label"":""" & label & """}"
     End Function
     'web sayfasını oluşturur
     Private Function WriteHta(isLibrary As Boolean, isBeginning As Boolean, Optional genislik As Integer = 1000, Optional yayinevi As String = "", Optional web As String = "") As String
@@ -111,7 +123,7 @@ Module main
             If isBeginning = True Then
                 html = "<!DOCTYPE html><html><head><meta http-equiv=""X-UA-Compatible"" content=""IE=edge;"" /><meta charset=""utf-8""><meta http-equiv=""content-type"" content=""text/html; charset=utf-8"" /><meta content=""tr_TR"" http-equiv=""Content-Language""><title>" & yayinevi & "</title>"
                 html &= "<HTA:APPLICATION ID=""oMyApp"" APPLICATIONNAME = ""Application Executer"" BORDER = ""no"" CAPTION = ""yes"" ShowInTaskbar = ""yes"" SINGLEINSTANCE = ""yes"" SYSMENU = ""yes"" Scroll = ""no"" WINDOWSTATE=""normal"" MAXIMIZEBUTTON=""Yes"" SELECTION=""no"" ICON=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Autorun.ico"" />"
-                html &= "<style>body{background:url('file:///" & AppAddress.Replace("\", "/") & "/Autorun/Background2.jpg') no-repeat center center fixed;background-size:cover;padding:0;margin:0;}</style>"
+                html &= "<style>body{background:url('file:///" & AppAddress.Replace("\", "/") & "/Autorun/Background2.jpg') no-repeat center center fixed;background-size:cover;padding:0;margin:0;}.bright{opacity:0.5;filter: alpha(opacity=50);}</style>"
                 html &= "<LINK href=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Autorun.ico"" rel=""SHORTCUT ICON""/><link href=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Includes/Bookcase.min.css"" rel=""stylesheet""/></head><body>"
                 html &= "<div class=""main-container""></div>"
                 html &= "<script src=""file:///" & AppAddress.Replace("\", "/") & "/Autorun/Includes/jquery.min.js""></script>"
@@ -213,20 +225,25 @@ Module main
     'ne kadar güncelleme var?
     Private Sub CheckUpdate()
         Dim webClient As New WebClient : Dim KitapSayisi As Integer = 0 : Dim version As String
+        Dim xGuid As Guid = Guid.NewGuid()
         'autorun.exe güncelleme kontrol
+        xGuid = Guid.NewGuid()
         version = My.Application.Info.Version.Major & "." & My.Application.Info.Version.Minor
-        Dim updateAutorun As String = webClient.DownloadString("http://212.175.211.198/API/CheckUpdates/1")
+        Dim updateAutorun As String = webClient.DownloadString("http://212.175.211.198/API/CheckUpdates/" & xGuid.ToString() & "-1")
         If updateAutorun <> version Then updateAutorun = "yes"
         'atu.exe güncelleme kontrol
-        Dim updateAtu As String = webClient.DownloadString("http://212.175.211.198/API/CheckUpdates/2")
+        xGuid = Guid.NewGuid()
+        Dim updateAtu As String = webClient.DownloadString("http://212.175.211.198/API/CheckUpdates/" & xGuid.ToString() & "-2")
         If updateAtu <> AtuVersion Then updateAtu = "yes"
         'updater.exe güncelleme kontrol
-        Dim updateUpdater As String = webClient.DownloadString("http://212.175.211.198/API/CheckUpdates/3")
+        xGuid = Guid.NewGuid()
+        Dim updateUpdater As String = webClient.DownloadString("http://212.175.211.198/API/CheckUpdates/" & xGuid.ToString() & "-3")
         If updateUpdater <> My.Settings.UpdaterVersion Then updateAtu = "yes"
         'tüm kitapları tek tek kontrol et
         For Each item In isler
             version = ReadIni(HtaFolder & "setting.ini", "General", item) : If version = "" Then version = "1.0"
-            Dim updateKitap As String = webClient.DownloadString("http://212.175.211.198/API/CheckUpdates/" & item)
+            xGuid = Guid.NewGuid()
+            Dim updateKitap As String = webClient.DownloadString("http://212.175.211.198/API/CheckUpdates/" & xGuid.ToString() & "-" & item)
             If updateKitap <> version Then KitapSayisi += 1 : islerUpdatable.Add(item)
         Next
         Dim tmp As String = ""
@@ -245,7 +262,8 @@ Module main
         Dim webClient As New WebClient : Dim ticket As String : Dim updateAutoRun As Boolean = False
         For Each item In islerUpdatable
             File.Delete(HtaFolder & item & ".zip")
-            ticket = webClient.DownloadString("http://212.175.211.198/API/CreateTicket/" & item)
+            Dim xGuid As Guid = Guid.NewGuid()
+            ticket = webClient.DownloadString("http://212.175.211.198/API/CreateTicket/" & xGuid.ToString() & "-" & item)
             Shell(AppAddress & "\Autorun\dm.exe http://212.175.211.198/API/Download/" & ticket & " --dir " & HtaFolder & " --out " & item & ".zip", AppWinStyle.Hide, True)
             'eğer item 1 ise bu programın güncellemesi yapılacak, en son olmak zorunda
             If item = 1 Then
