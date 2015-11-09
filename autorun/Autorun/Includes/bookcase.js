@@ -738,6 +738,7 @@ Bookcase.prototype = {
                         $label = $("<img class='book-label' src='" + this.getLabelFilePath(this.data[index].label) + "'>");
                         $priceLabel = $("<div class='price-label' title='" + this.data[index].sinif + "'>" + this.data[index].sinif + "</div>");
 
+                        if (this.data[index].sinif == "") { $priceLabel.addClass("hide"); }
                         if (this.data[index].label == "0") { $label.hide(); }
                         if (this.data[index].label == "-1") { $label.hide(); $img.addClass("bright"); }
 
